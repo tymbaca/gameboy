@@ -10,5 +10,7 @@ main :: proc() {
     f.h = true
     f.c = true
 
-    fmt.printf("size: %d, bin: %b", size_of(f), transmute(byte)f)
+    val: cpu.Reg_u16
+    fmt.printf("size: %d, bin: %b\n", size_of(f), u8(f))
+    fmt.printf("regs: %d %d %d\n", cpu.Reg_u16.PC, cpu.Reg_u16.SP, val)
 }
