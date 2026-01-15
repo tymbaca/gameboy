@@ -78,4 +78,77 @@ get_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) -> u16 {
     log.panic("unreachable, got unknown reg_u16", reg)
 }
 
+set_reg :: proc(cpu: ^CPU, reg: Reg, val: u8) {
+    switch reg {
+    case .A:
+        cpu.a = val
+    case .F:
+        cpu.f = Flag_Reg(val)
+    case .B:
+        cpu.b = val
+    case .C:
+        cpu.c = val
+    case .D:
+        cpu.d = val
+    case .E:
+        cpu.e = val
+    case .H:
+        cpu.h = val
+    case .L:
+        cpu.l = val
+    case:
+        log.panic("unreachable, got unknown reg", reg)
+    }
 
+    return
+}
+
+set_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16, val: u16) {
+    switch reg {
+    case .PC:
+        cpu.pc = val
+    case .SP:
+        cpu.sp = val
+    case .AF:
+        a, f := math.split_u16(val)
+        cpu.a, cpu.f = a, Flag_Reg(f)
+    case .BC:
+        cpu.b, cpu.c = math.split_u16(val)
+    case .DE:
+        cpu.d, cpu.e = math.split_u16(val)
+    case .HL:
+        cpu.h, cpu.l = math.split_u16(val)
+    case: 
+        log.panic("unreachable, got unknown reg_u16", reg)
+    }
+
+    return
+}
+
+// TODO: tests
+
+execute :: proc(cpu: ^CPU) -> u8 {
+    op := fetch(cpu)
+    return OPCODES[op](cpu)
+}
+
+fetch :: proc(cpu: ^CPU) -> u8 {
+    val := read_mem(cpu, cpu.pc)
+    cpu.pc += 1
+    return val
+}
+
+fetch_u16 :: proc(cpu: ^CPU) -> u16 {
+    low := fetch(cpu)
+    high := fetch(cpu)
+
+    return math.merge_u16(high, low)
+}
+
+read_mem :: proc(cpu: ^CPU, addr: u16) -> u8 {
+    panic("not implemented")
+}
+
+write_mem :: proc(cpu: ^CPU, addr: u16, val: u8) {
+    panic("not implemented")
+}

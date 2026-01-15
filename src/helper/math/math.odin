@@ -3,6 +3,9 @@ package helper_math
 import "core:math/bits"
 import "core:testing"
 
+MAX_U16 :: 65535 
+MAX_U8 :: 255 
+
 merge_u16 :: proc(high, low: u8) -> u16 {
     val: u16
     val |= u16(low)
