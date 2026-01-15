@@ -93,3 +93,50 @@ will_sub_borrow_u16_test :: proc(t: ^testing.T) {
     testing.expect(t, will_sub_borrow_u16(1, 65535) == true)
     testing.expect(t, will_sub_borrow_u16(65535, 1) == false)
 }
+
+will_add_half_carry :: proc(a, b: u8) -> bool {
+    a_lower := a & 0x0F
+    b_lower := b & 0x0F
+    return (a_lower + b_lower) & 0xF0 != 0
+}
+
+will_add_half_carry_u16 :: proc(a, b: u16) -> bool {
+    a_lower := a & 0x0FFF
+    b_lower := b & 0x0FFF
+    return (a_lower + b_lower) & 0xF000 != 0
+}
+
+@(test)
+will_add_half_carry_test :: proc(t: ^testing.T) {
+    testing.expect(t, will_add_half_carry(0b00001111, 1) == true)
+    testing.expect(t, will_add_half_carry(0b11101111, 1) == true)
+    testing.expect(t, will_add_half_carry(0b00011111, 1) == true)
+    testing.expect(t, will_add_half_carry(0b00010001, 0b00001111) == true)
+
+    testing.expect(t, will_add_half_carry(0b00001110, 1) == false)
+    testing.expect(t, will_add_half_carry(0b11101110, 1) == false)
+    testing.expect(t, will_add_half_carry(0b00010000, 0b00001111) == false)
+}
+
+@(test)
+will_add_half_carry_u16_test :: proc(t: ^testing.T) {
+    testing.expect(t, will_add_half_carry_u16(0b00001111_00000000, 0x0100) == true)
+    testing.expect(t, will_add_half_carry_u16(0b11101111_00000000, 0x0100) == true)
+    testing.expect(t, will_add_half_carry_u16(0b00011111_00000000, 0x0100) == true)
+    testing.expect(t, will_add_half_carry_u16(0b00010001_00000000, 0b00001111_00000000) == true)
+    testing.expect(t, will_add_half_carry_u16(0b00001110_00000000, 1) == false)
+    testing.expect(t, will_add_half_carry_u16(0b11101110_00000000, 1) == false)
+    testing.expect(t, will_add_half_carry_u16(0b00010000_00000000, 0b00001111_00000000) == false)
+}
+
+will_sub_half_borrow :: proc(a, b: u8) -> bool {
+    a_lower := a & 0x0F
+    b_lower := b & 0x0F
+    return (a_lower + b_lower) & 0xF0 != 0
+}
+
+will_sub_half_borrow_u16 :: proc(a, b: u16) -> bool {
+    a_lower := a & 0x0FFF
+    b_lower := b & 0x0FFF
+    return (a_lower + b_lower) & 0xF000 != 0
+}
