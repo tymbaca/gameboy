@@ -4,6 +4,8 @@ import "core:fmt"
 import imgui "lib:imgui"
 import imgui_rl "lib:imgui/imgui_impl_raylib"
 import rl "vendor:raylib"
+import "src:backend/cpu"
+import "src:frontend"
 
 
 init :: proc() {
@@ -26,30 +28,23 @@ main :: proc() {
 	imgui_rl.init()
 	defer imgui_rl.shutdown()
 	imgui_rl.build_font_atlas()
+    // YOUR CODE HERE
 
+    cpu: cpu.CPU
+
+    // YOUR CODE HERE
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
 		imgui_rl.process_events()
 		imgui_rl.new_frame()
 		imgui.NewFrame()
+		// YOUR CODE HERE
+
+        frontend.cpu_debug_menu(&cpu)
+
 
 		// YOUR CODE HERE
-		if imgui.Begin("test") {
-			imgui.Text("text1")
-			imgui.Text("text2")
-		}
-		imgui.End()
-
-		if imgui.Begin("player") {
-			if imgui.CollapsingHeader("entities") {
-			}
-
-			imgui.Text("info")
-		}
-		imgui.End()
-
-
 		imgui.Render()
 		imgui_rl.render_draw_data(imgui.GetDrawData())
 		rl.EndDrawing()
