@@ -13,10 +13,14 @@ CPU :: struct {
 }
 
 Reg :: enum {
-    A, F, 
-    B, C, 
-    D, E, 
-    H, L,
+    A = 0, 
+    F = 1, 
+    B = 2, 
+    C = 3, 
+    D = 4, 
+    E = 5, 
+    H = 6, 
+    L = 7,
 }
 
 Reg_u16 :: enum {
@@ -125,6 +129,15 @@ set_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16, val: u16) {
     return
 }
 
+inc_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) {
+    val := get_reg_u16(cpu, reg)
+    set_reg_u16(cpu, reg, val + 1)
+}
+
+dec_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) {
+    val := get_reg_u16(cpu, reg)
+    set_reg_u16(cpu, reg, val - 1)
+}
 // TODO: tests
 
 execute :: proc(cpu: ^CPU) -> u8 {
