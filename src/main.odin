@@ -36,13 +36,14 @@ main :: proc() {
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
+        // rl.DrawFPS(10, 10)
 		imgui_rl.process_events()
 		imgui_rl.new_frame()
 		imgui.NewFrame()
 		// YOUR CODE HERE
 
         frontend.cpu_debug_menu(&cpu)
-
+        frontend.screen(&cpu)
 
 		// YOUR CODE HERE
 		imgui.Render()
