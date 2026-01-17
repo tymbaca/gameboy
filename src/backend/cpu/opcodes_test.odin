@@ -111,29 +111,6 @@ add_test :: proc(t: ^testing.T) {
 
 // WARNING: AI SLOP
 
-// TODO: remove?
-// @(test)
-// inc_test :: proc(t: ^testing.T) {
-//     cpu := test_cpu()
-//     f_at_start := cpu.f
-//    
-//     // Test INC A
-//     cpu.a = 0x0F
-//     inc_a := inc(.A)
-//     cycles := inc_a(&cpu)
-//    
-//     testing.expect(t, cpu.a == 0x10, "INC A result mismatch")
-//     testing.expect(t, cpu.f.h == true, "Half-carry flag not set")
-//     testing.expect(t, cpu.f.n == false, "Negative flag incorrectly set")
-//     testing.expect(t, cycles == 1, "INC r cycles mismatch")
-//    
-//     // Test zero flag
-//     cpu.a = math.MAX_U8
-//     inc_a(&cpu)
-//     testing.expect(t, cpu.a == 0, "INC A overflow mismatch")
-//     testing.expect(t, cpu.f.z == true, "Zero flag not set on overflow")
-// }
-
 @(test)
 dec_test :: proc(t: ^testing.T) {
     cpu := test_cpu()
@@ -154,25 +131,6 @@ dec_test :: proc(t: ^testing.T) {
     testing.expect(t, cpu.b == 0x0F, "DEC B half-borrow mismatch")
     testing.expect(t, cpu.f.h == true, "Half-borrow flag not set")
 }
-
-// TODO: remove?
-// @(test)
-// inc_u16_test :: proc(t: ^testing.T) {
-//     cpu := test_cpu()
-//    
-//     // Test INC HL
-//     set_reg_u16(&cpu, .HL, 0x1234)
-//     inc_hl := inc_u16(.HL)
-//     cycles := inc_hl(&cpu)
-//    
-//     testing.expect(t, get_reg_u16(&cpu, .HL) == 0x1235, "INC HL mismatch")
-//     testing.expect(t, cycles == 2, "INC rr cycles mismatch")
-//    
-//     // Test overflow
-//     set_reg_u16(&cpu, .HL, math.MAX_U16)
-//     inc_hl(&cpu)
-//     testing.expect(t, get_reg_u16(&cpu, .HL) == 0, "INC HL overflow mismatch")
-// }
 
 @(test)
 dec_u16_test :: proc(t: ^testing.T) {
@@ -258,33 +216,6 @@ ld_fv_u16_test :: proc(t: ^testing.T) {
     testing.expect(t, cpu.pc == 0x102, "PC not incremented correctly")
     testing.expect(t, cycles == 3, "LD rr,nn cycles mismatch")
 }
-
-// TODO: remove?
-// @(test)
-// add_test :: proc(t: ^testing.T) {
-//     cpu := test_cpu()
-//    
-//     // Test ADD A,B
-//     cpu.a = 0x0F
-//     cpu.b = 0x01
-//    
-//     add_ab := add(.A, .B)
-//     cycles := add_ab(&cpu)
-//    
-//     testing.expect(t, cpu.a == 0x10, "ADD A,B result mismatch")
-//     testing.expect(t, cpu.f.h == true, "Half-carry flag not set")
-//     testing.expect(t, cpu.f.n == false, "Negative flag incorrectly set")
-//     testing.expect(t, cycles == 1, "ADD A,r cycles mismatch")
-//    
-//     // Test carry
-//     cpu.a = 0xFF
-//     cpu.b = 0x01
-//     add_ab(&cpu)
-//    
-//     testing.expect(t, cpu.a == 0, "ADD A,B overflow mismatch")
-//     testing.expect(t, cpu.f.z == true, "Zero flag not set")
-//     testing.expect(t, cpu.f.c == true, "Carry flag not set")
-// }
 
 @(test)
 sub_test :: proc(t: ^testing.T) {
