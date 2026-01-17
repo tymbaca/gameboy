@@ -129,6 +129,16 @@ set_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16, val: u16) {
     return
 }
 
+add_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16, delta: i8) {
+    val := get_reg_u16(cpu, reg)
+
+    if delta >= 0 {
+        set_reg_u16(cpu, reg, val + u16(delta))
+    } else {
+        set_reg_u16(cpu, reg, val - u16(abs(delta)))
+    }
+}
+
 inc_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) {
     val := get_reg_u16(cpu, reg)
     set_reg_u16(cpu, reg, val + 1)
