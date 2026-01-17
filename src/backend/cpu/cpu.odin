@@ -167,11 +167,3 @@ fetch_u16 :: proc(cpu: ^CPU) -> u16 {
 
     return math.merge_u16(high, low)
 }
-
-read_mem :: proc(cpu: ^CPU, addr: u16) -> u8 {
-    panic("not implemented")
-}
-
-write_mem :: proc(cpu: ^CPU, addr: u16, val: u8) {
-    panic("not implemented")
-}
