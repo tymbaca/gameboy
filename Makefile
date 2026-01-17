@@ -4,5 +4,8 @@ TEST_FLAGS:=-define:ODIN_TEST_THREADS=1 -define:ODIN_TEST_SHORT_LOGS=true -defin
 run:
 	@odin run src -out:bin/main.bin $(FLAGS) 
 
+range:
+	@odin run range -out:bin/range.bin $(FLAGS) 
+
 test:
 	@odin test tests/ -out:bin/test.bin -all-packages $(TEST_FLAGS) $(FLAGS)
