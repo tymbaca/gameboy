@@ -70,13 +70,13 @@ get_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) -> u16 {
     case .SP:
         return cpu.sp
     case .AF:
-        return math.merge_u16(cpu.a, u8(cpu.f))
+        return math.merge_u16(u8(cpu.f), cpu.a)
     case .BC:
-        return math.merge_u16(cpu.b, cpu.c)
+        return math.merge_u16(cpu.c, cpu.b)
     case .DE:
-        return math.merge_u16(cpu.d, cpu.e)
+        return math.merge_u16(cpu.e, cpu.d)
     case .HL:
-        return math.merge_u16(cpu.h, cpu.l)
+        return math.merge_u16(cpu.l, cpu.h)
     }
 
     log.panic("unreachable, got unknown reg_u16", reg)
@@ -114,14 +114,14 @@ set_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16, val: u16) {
     case .SP:
         cpu.sp = val
     case .AF:
-        a, f := math.split_u16(val)
-        cpu.a, cpu.f = a, Flag_Reg(f)
+        f, a := math.split_u16(val)
+        cpu.f, cpu.a = Flag_Reg(f), a
     case .BC:
-        cpu.b, cpu.c = math.split_u16(val)
+        cpu.c, cpu.b = math.split_u16(val)
     case .DE:
-        cpu.d, cpu.e = math.split_u16(val)
+        cpu.e, cpu.d = math.split_u16(val)
     case .HL:
-        cpu.h, cpu.l = math.split_u16(val)
+        cpu.l, cpu.h = math.split_u16(val)
     case: 
         log.panic("unreachable, got unknown reg_u16", reg)
     }

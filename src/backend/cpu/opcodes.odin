@@ -191,7 +191,7 @@ ld :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-// load memory to left
+// load memory into left
 ld_ml :: proc($left_reg: Reg_u16, $right_reg: Reg, $step: i8) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, right_reg)
@@ -212,5 +212,68 @@ ld_mr :: proc($left_reg: Reg, $right_reg: Reg_u16, $step: i8) -> proc(cpu: ^CPU)
         add_reg_u16(cpu, right_reg, step)
 
         return 2
+    }
+}
+
+// load fetched value
+ld_f_u8 :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := fetch(cpu)
+        set_reg(cpu, reg, val)
+        return 2
+    }
+}
+
+// load fetched value u16
+ld_f_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := fetch_u16(cpu)
+        set_reg_u16(cpu, reg, val)
+        return 3
+    }
+}
+
+// load fetched value into (left_reg) address
+ld_fmem :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := fetch(cpu)
+        addr := get_reg_u16(cpu, reg)
+        write_mem(cpu, addr, val)
+        return 3
+    }
+}
+
+// load into fetched address
+ld_fl :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := get_reg(cpu, reg)
+        addr := fetch_u16(cpu)
+        write_mem(cpu, addr, val)
+
+        return 4
+    }
+}
+
+// load 2 bytes into fetched address
+ld_fl_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := get_reg_u16(cpu, reg)
+
+        math.split_u16(val)
+        addr := fetch_u16(cpu)
+        write_mem(cpu, addr, val)
+
+        return 4
+    }
+}
+
+// load from fetched address
+ld_fr :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        addr := fetch_u16(cpu)
+        val := read_mem(cpu, addr)
+        set_reg(cpu, reg)
+
+        return 4
     }
 }

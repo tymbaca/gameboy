@@ -10,7 +10,7 @@ import "src:frontend"
 
 init :: proc() {
 	rl.SetConfigFlags({rl.ConfigFlag.WINDOW_RESIZABLE})
-	rl.InitWindow(800, 600, "app")
+	rl.InitWindow(1200, 800, "app")
 	rl.SetTargetFPS(60)
 	rl.InitAudioDevice()
 }

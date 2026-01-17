@@ -66,7 +66,7 @@ inc_u16_test :: proc(t: ^testing.T) {
 add_test :: proc(t: ^testing.T) {
     cpu := test_cpu()
     f_at_start := cpu.f
-    add_ab := add_u8(.A, .B)
+    add_ab := add(.A, .B)
 
     cpu.a = 1
     cpu.b = 2
