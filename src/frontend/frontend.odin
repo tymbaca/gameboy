@@ -140,10 +140,8 @@ ram_menu :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
 
     // im.SameLine()
     
-    @(static) limit: c.int = 500
+    @(static) limit: c.int = 0x200
     im.DragScalar("limit", .U16, &limit)
-
-    im.Text("len(ram): %d", len(cpu.bus.ram))
 
     dump_text := dump.dump_cstring(cpu.bus.ram[from_addr:from_addr+limit], int(from_addr), allocator = allocator)
     im.TextUnformatted(dump_text)

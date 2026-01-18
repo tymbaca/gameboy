@@ -9,7 +9,8 @@ printables_set: strings.Ascii_Set
 
 @(init)
 init :: proc() {
-    ascii_set, ok := strings.ascii_set_make("!\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~")
+    ok: bool
+    printables_set, ok = strings.ascii_set_make("!\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~")
     assert(ok)
 }
 
