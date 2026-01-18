@@ -161,6 +161,7 @@ ram_menu :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
     if im.SmallButton("add editor") {
         append(&editors, Ram_Editor{
             id = fmt.caprintf("RAM editor #%d", len(editors), allocator = allocator),
+            cpu = cpu,
             val_fmt = IM_U8_HEX_FMT,
             val_type = .U8,
         })
@@ -199,6 +200,7 @@ ram_viewer_render :: proc(r: ^Ram_Viewer, allocator := context.allocator) {
 
 Ram_Editor :: struct {
     id: cstring,
+    cpu: ^cpu_pkg.CPU,
     addr: u16,
     val: u8,
     val_fmt: cstring,
@@ -232,4 +234,19 @@ ram_editor_render :: proc(r: ^Ram_Editor, allocator := context.allocator) {
 
     im.DragScalar("addr", .U16, &r.addr, format = IM_U16_HEX_FMT)
     im.DragScalar("val", r.val_type, &r.val, format = r.val_fmt)
+
+    im.BeginGroup()
+    im.Text(fmt.caprintf("bin: %8b", r.val, allocator = allocator))
+    im.SameLine()
+    im.Text(fmt.caprintf("ascii: %c", r.val, allocator = allocator))
+    im.EndGroup()
+
+    if im.SmallButton("set") {
+        r.cpu.bus.ram[r.addr] = r.val
+    }
+    im.SameLine()
+    if im.SmallButton("set & step") {
+        r.cpu.bus.ram[r.addr] = r.val
+        r.addr += 1
+    }
 }

@@ -60,7 +60,7 @@ append_line :: proc(b: ^strings.Builder, data: []u8, addr: int, offset: int, all
         chunk = chunk[:line_size]
     }
 
-    fmt.sbprintf(b, "%3Xx | ", addr>>1)
+    fmt.sbprintf(b, "%3Xx | ", addr>>4)
 
     pad_left := offset
     pad_right := line_size - len(chunk)
