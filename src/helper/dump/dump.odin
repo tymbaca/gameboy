@@ -15,31 +15,25 @@ init :: proc() {
 
 LINE_SIZE :: len("0000 | 01 23 45 67 89 AB CD EF 01 23 45 67 89 AB CD EF | 0123456789abcdef")
 
-dump_string :: proc(data: []u8, from := 0, limit := 0, allocator := context.allocator) -> string {
-    b := dump(data, from, limit, allocator)
+dump_string :: proc(data: []u8, start_addr: int, allocator := context.allocator) -> string {
+    b := dump(data, start_addr, allocator)
     return strings.to_string(b)
 }
 
-dump_cstring :: proc(data: []u8, from := 0, limit := 0, allocator := context.allocator) -> cstring {
-    b := dump(data, from, limit, allocator)
+dump_cstring :: proc(data: []u8, start_addr: int, allocator := context.allocator) -> cstring {
+    b := dump(data, start_addr, allocator)
     return strings.to_cstring(&b)
 }
 
-dump :: proc(data: []u8, from := 0, limit := 0, allocator := context.allocator) -> strings.Builder {
+dump :: proc(data: []u8, start_addr: int, allocator := context.allocator) -> strings.Builder {
     data := data
-    from := from
-    limit := limit
-    if limit < 0 || limit > len(data) do limit = len(data)
-    if from <= 0 do from = 0
-    if from > len(data) do from = len(data)
-             // 100  110
-    data = data[from:from+limit]
 
     builder: strings.Builder
     strings.builder_init(&builder, allocator = allocator)
 
-    for from < len(data) {
-        from += append_line(&builder, data[from:], from, allocator)
+    i := 0
+    for i < len(data) {
+        i += append_line(&builder, data[i:], start_addr+i, allocator)
     }
 
     return builder

@@ -145,6 +145,6 @@ ram_menu :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
 
     im.Text("len(ram): %d", len(cpu.bus.ram))
 
-    dump_text := dump.dump_cstring(cpu.bus.ram[:], from = int(from_addr), limit = int(limit), allocator = allocator)
+    dump_text := dump.dump_cstring(cpu.bus.ram[from_addr:from_addr+limit], int(from_addr), allocator = allocator)
     im.TextUnformatted(dump_text)
 }
