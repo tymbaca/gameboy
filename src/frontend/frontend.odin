@@ -135,14 +135,99 @@ ram_menu :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
     im.Begin("RAM")
     defer im.End()
 
-    @(static) from_addr: c.int = 0
-    im.DragScalar("addr", .U16, &from_addr, format = "%04X")
+    @(static) viewers: [dynamic]Ram_Viewer
+    if viewers == nil {
+        viewers = make([dynamic]Ram_Viewer, allocator = allocator)
+    }
 
-    // im.SameLine()
-    
-    @(static) limit: c.int = 0x200
-    im.DragScalar("limit", .U16, &limit)
+    if im.SmallButton("add viewer") {
+        append(&viewers, Ram_Viewer{
+            id = fmt.caprintf("RAM viewer #%d", len(viewers), allocator = allocator),
+            cpu = cpu,
+            from_addr = 0,
+            limit = 0x200,
+        })
+    }
 
-    dump_text := dump.dump_cstring(cpu.bus.ram[from_addr:from_addr+limit], int(from_addr), allocator = allocator)
+    for &viewer in viewers {
+        ram_viewer_render(&viewer, allocator = allocator)
+    }
+
+    @(static) editors: [dynamic]Ram_Editor
+    if editors == nil {
+        editors = make([dynamic]Ram_Editor, allocator = allocator)
+    }
+
+    if im.SmallButton("add editor") {
+        append(&editors, Ram_Editor{
+            id = fmt.caprintf("RAM editor #%d", len(editors), allocator = allocator),
+            val_fmt = IM_U8_HEX_FMT,
+            val_type = .U8,
+        })
+    }
+
+    for &editor in editors {
+        ram_editor_render(&editor, allocator = allocator)
+    }
+}
+
+Ram_Viewer :: struct {
+    id: cstring,
+    cpu: ^cpu_pkg.CPU,
+    from_addr: u16,
+    limit: u16,
+}
+
+ram_viewer_render :: proc(r: ^Ram_Viewer, allocator := context.allocator) {
+    im.Begin(r.id)
+    defer im.End()
+
+    im.DragScalar("addr", .U16, &r.from_addr, format = IM_U16_HEX_FMT)
+    im.DragScalar("limit", .U16, &r.limit)
+
+    im.TextUnformatted(dump.HEADER)
+    dump_text := dump.dump_cstring(
+        r.cpu.bus.ram[r.from_addr:r.from_addr+r.limit], 
+        int(r.from_addr - (r.from_addr % 16)), 
+        offset = int(r.from_addr % 16),
+        allocator = allocator,
+    )
     im.TextUnformatted(dump_text)
+}
+
+Ram_Editor :: struct {
+    id: cstring,
+    addr: u16,
+    val: u8,
+    val_fmt: cstring,
+    val_type: im.DataType,
+}
+
+IM_U8_DEC_FMT :: "%d"
+IM_U8_HEX_FMT :: "%02X"
+IM_U16_DEC_FMT :: "%d"
+IM_U16_HEX_FMT :: "%04X"
+
+ram_editor_render :: proc(r: ^Ram_Editor, allocator := context.allocator) {
+    im.Begin(r.id)
+    defer im.End()
+
+    if im.SmallButton("DEC") {
+        r.val_fmt = IM_U8_DEC_FMT
+    }
+    im.SameLine()
+    if im.SmallButton("HEX") {
+        r.val_fmt = IM_U8_HEX_FMT
+    }
+
+    if im.SmallButton("u8") {
+        r.val_type = .U8
+    }
+    im.SameLine()
+    if im.SmallButton("i8") {
+        r.val_type = .S8
+    }
+
+    im.DragScalar("addr", .U16, &r.addr, format = IM_U16_HEX_FMT)
+    im.DragScalar("val", r.val_type, &r.val, format = r.val_fmt)
 }
