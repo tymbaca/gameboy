@@ -192,7 +192,9 @@ ram_viewer_render :: proc(r: ^Ram_Viewer, allocator := context.allocator) {
         offset = int(r.from_addr % 16),
         allocator = allocator,
     )
+    im.BeginChild(r.id)
     im.TextUnformatted(dump_text)
+    im.EndChild()
 }
 
 Ram_Editor :: struct {
