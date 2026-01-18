@@ -2,6 +2,7 @@ package cpu
 
 import "core:log"
 import "src:helper/math"
+import "src:backend/bus"
 
 CPU :: struct {
     pc, sp: u16,
@@ -9,18 +10,15 @@ CPU :: struct {
     f: Flag_Reg, // Flag Register
     b, c: u8, 
     d, e: u8,
-    h, l: u8, // High / Low
+    h, l: u8,
+    bus: bus.Bus,
 }
 
 Reg :: enum {
-    A = 0, 
-    F = 1, 
-    B = 2, 
-    C = 3, 
-    D = 4, 
-    E = 5, 
-    H = 6, 
-    L = 7,
+    A, F, 
+    B, C, 
+    D, E, 
+    H, L,
 }
 
 Reg_u16 :: enum {

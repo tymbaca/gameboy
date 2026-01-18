@@ -31,12 +31,16 @@ main :: proc() {
     // YOUR CODE HERE
 
     cpu: cpu.CPU
+    for _, i in cpu.bus.ram {
+        cpu.bus.ram[i] = u8(i % 256)
+    }
 
     // YOUR CODE HERE
+    // TODO: arena allocator
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
-        // rl.DrawFPS(10, 10)
+        rl.DrawFPS(10, 10)
 		imgui_rl.process_events()
 		imgui_rl.new_frame()
 		imgui.NewFrame()
