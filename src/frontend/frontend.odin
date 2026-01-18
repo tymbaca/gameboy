@@ -138,7 +138,7 @@ ram_menu :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
     @(static) from_addr: c.int = 0
     im.InputInt("addr", &from_addr)
     
-    @(static) limit: c.int = 0
+    @(static) limit: c.int = 500
     im.InputInt("limit", &limit)
 
     im.Text("len(ram): %d", len(cpu.bus.ram))

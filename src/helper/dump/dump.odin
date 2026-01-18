@@ -31,6 +31,7 @@ dump :: proc(data: []u8, from := 0, to := 0, allocator := context.allocator) -> 
     to := to
     if to < 0 || to > len(data) do to = len(data)
     if from <= 0 do from = 0
+    if from > len(data) do from = len(data)
 
     data = data[from:to]
 

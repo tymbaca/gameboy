@@ -14,7 +14,12 @@ main :: proc() {
     // fmt.printf("size: %d, bin: %b\n", size_of(f), u8(f))
     // fmt.printf("regs: %d %d %d\n", cpu.Reg_u16.PC, cpu.Reg_u16.SP, val)
 
-    for r in cpu.Reg_u16 {
-        fmt.println(r)
-    }
+    // for r in cpu.Reg_u16 {
+    //     fmt.println(r)
+    // }
+
+    arr: [3]u8 = {0, 1, 2}
+    sl := arr[3:3]
+
+    fmt.println(sl)
 }
