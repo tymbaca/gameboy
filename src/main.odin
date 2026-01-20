@@ -57,6 +57,8 @@ main :: proc() {
     // YOUR CODE HERE
 
 	for !rl.WindowShouldClose() {
+        defer free_all(frame_allocator)
+
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.BLACK)
         rl.DrawFPS(10, 10)
@@ -75,8 +77,6 @@ main :: proc() {
 		imgui.Render()
 		imgui_rl.render_draw_data(imgui.GetDrawData())
 		rl.EndDrawing()
-
-        free_all(frame_allocator)
 	}
 }
 
