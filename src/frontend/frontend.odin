@@ -12,7 +12,40 @@ import "src:helper/dump"
 
 TABLE_FLAGS :: im.TableFlags_Resizable | im.TableFlags_BordersOuter | im.TableFlags_RowBg  | im.TableFlags_ContextMenuInBody // | im.TableFlags_SizingFixedFit | im.TableFlags_NoHostExtendX
 
-screen :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) { 
+Context :: struct {
+    cpu: ^cpu_pkg.CPU,
+
+    byte_fmt: string,
+    two_byte_fmt: string,
+	reg_mode: int,
+
+    viewers: [dynamic]Ram_Viewer,
+    editors: [dynamic]Ram_Editor,
+}
+
+context_init :: proc(ctx: ^Context, cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
+    ctx.cpu = cpu
+
+    ctx.byte_fmt = "%2x"
+    ctx.two_byte_fmt = "%4x"
+    ctx.reg_mode = 1
+
+    ctx.viewers = make([dynamic]Ram_Viewer, allocator)
+    ctx.editors = make([dynamic]Ram_Editor, allocator)
+}
+
+context_destroy :: proc(ctx: ^Context) {
+    delete(ctx.viewers)
+    delete(ctx.editors)
+}
+
+render :: proc(ctx: ^Context, allocator := context.allocator) {
+    render_cpu(ctx, allocator)
+    render_ram(ctx, allocator)
+    render_screen(ctx.cpu, allocator)
+}
+
+render_screen :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) { 
 	im.Begin("Screen")
 	defer im.End()
 
@@ -32,49 +65,43 @@ screen :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
     }
 }
 
-cpu_debug_menu :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
+render_cpu :: proc(ctx: ^Context, allocator := context.allocator) {
 	im.Begin("CPU")
 	defer im.End()
-
-    ram_menu(cpu, allocator)
 
     if im.Button("step") {
         buf: [size_of(cpu_pkg.CPU)]byte
         _ = rand.read(buf[:])
 
-        mem.copy(cpu, &buf, len(buf))
+        mem.copy(ctx.cpu, &buf, len(buf))
     }
 
 	if im.CollapsingHeader("Registers") {
-        @(static) byte_fmt: string = "%2x"
-        @(static) two_byte_fmt: string = "%4x"
-		@(static) reg_mode: int = 1
-
         if im.SmallButton("DEC") {
-            byte_fmt = "%d"
-            two_byte_fmt = "%d"
+            ctx.byte_fmt = "%d"
+            ctx.two_byte_fmt = "%d"
         }
         im.SameLine()
         if im.SmallButton("BIN") {
-            byte_fmt = "%8b"
-            two_byte_fmt = "%16b"
+            ctx.byte_fmt = "%8b"
+            ctx.two_byte_fmt = "%16b"
         }
         im.SameLine()
         if im.SmallButton("HEX") {
-            byte_fmt = "%2x"
-            two_byte_fmt = "%4x"
+            ctx.byte_fmt = "%2x"
+            ctx.two_byte_fmt = "%4x"
         }
 
         im.SameLine()
         im.Text("|")
         im.SameLine()
 
-        if im.SmallButton("R|R") do reg_mode = 1
+        if im.SmallButton("R|R") do ctx.reg_mode = 1
         im.SameLine()
-        if im.SmallButton("RR") do reg_mode = 2
+        if im.SmallButton("RR") do ctx.reg_mode = 2
 
-        general_regs(cpu, byte_fmt, two_byte_fmt, reg_mode, allocator)
-        special_regs(cpu, two_byte_fmt, allocator)
+        general_regs(ctx.cpu, ctx.byte_fmt, ctx.two_byte_fmt, ctx.reg_mode, allocator)
+        special_regs(ctx.cpu, ctx.two_byte_fmt, allocator)
 	}
 }
 
@@ -131,56 +158,47 @@ table_item :: proc(label, value: cstring) {
     im.Text(value)
 }
 
-ram_menu :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
+render_ram :: proc(ctx: ^Context, allocator := context.allocator) {
     im.Begin("RAM")
     defer im.End()
 
-    @(static) viewers: [dynamic]Ram_Viewer
-    if viewers == nil {
-        viewers = make([dynamic]Ram_Viewer, allocator = allocator)
-    }
-
     if im.SmallButton("add viewer") {
-        append(&viewers, Ram_Viewer{
-            id = fmt.caprintf("RAM viewer #%d", len(viewers), allocator = allocator),
-            cpu = cpu,
+        append(&ctx.viewers, Ram_Viewer{
+            id = len(ctx.viewers),
+            cpu = ctx.cpu,
             from_addr = 0,
             limit = 0x200,
         })
     }
 
-    for &viewer in viewers {
+    for &viewer in ctx.viewers {
         ram_viewer_render(&viewer, allocator = allocator)
     }
 
-    @(static) editors: [dynamic]Ram_Editor
-    if editors == nil {
-        editors = make([dynamic]Ram_Editor, allocator = allocator)
-    }
-
     if im.SmallButton("add editor") {
-        append(&editors, Ram_Editor{
-            id = fmt.caprintf("RAM editor #%d", len(editors), allocator = allocator),
-            cpu = cpu,
+        append(&ctx.editors, Ram_Editor{
+            id = len(ctx.editors),
+            cpu = ctx.cpu,
             val_fmt = IM_U8_HEX_FMT,
             val_type = .U8,
         })
     }
 
-    for &editor in editors {
+    for &editor in ctx.editors {
         ram_editor_render(&editor, allocator = allocator)
     }
 }
 
 Ram_Viewer :: struct {
-    id: cstring,
+    id: int,
     cpu: ^cpu_pkg.CPU,
     from_addr: u16,
     limit: u16,
 }
 
 ram_viewer_render :: proc(r: ^Ram_Viewer, allocator := context.allocator) {
-    im.Begin(r.id)
+    id := fmt.caprintf("RAM viewer #%d", r.id, allocator = allocator)
+    im.Begin(id)
     defer im.End()
 
     im.DragScalar("addr", .U16, &r.from_addr, format = IM_U16_HEX_FMT)
@@ -193,13 +211,13 @@ ram_viewer_render :: proc(r: ^Ram_Viewer, allocator := context.allocator) {
         offset = int(r.from_addr % 16),
         allocator = allocator,
     )
-    im.BeginChild(r.id)
+    im.BeginChild(id)
     im.TextUnformatted(dump_text)
     im.EndChild()
 }
 
 Ram_Editor :: struct {
-    id: cstring,
+    id: int,
     cpu: ^cpu_pkg.CPU,
     addr: u16,
     val: u8,
@@ -213,7 +231,7 @@ IM_U16_DEC_FMT :: "%d"
 IM_U16_HEX_FMT :: "%04X"
 
 ram_editor_render :: proc(r: ^Ram_Editor, allocator := context.allocator) {
-    im.Begin(r.id)
+    im.Begin(fmt.caprintf("RAM editor #%d", r.id, allocator = allocator))
     defer im.End()
 
     if im.SmallButton("DEC") {

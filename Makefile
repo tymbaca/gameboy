@@ -1,4 +1,4 @@
-FLAGS:=-collection:src=src -collection:lib=lib
+FLAGS:=-collection:src=src -collection:lib=lib -debug
 TEST_FLAGS:=-define:ODIN_TEST_THREADS=1 -define:ODIN_TEST_SHORT_LOGS=true -define:ODIN_TEST_LOG_LEVEL=debug -define:ODIN_TEST_CLIPBOARD=true -define:ODIN_TEST_PROGRESS_WIDTH=0
 
 run:
