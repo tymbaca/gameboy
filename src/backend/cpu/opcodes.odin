@@ -5,23 +5,23 @@ import "src:helper/math"
 // https://izik1.github.io/gbops/
 
 OPCODES: [256]proc(^CPU) -> u8 = {
-//  0x00,            0x01,            0x02,             0x03,            0x04,            0x05,            0x06,            0x07,            0x08,           0x09,             0x0A,             0x0B,         0x0C,      0x0D,      0x0E,            0x0F
-    nop_00,          ld_fv_u16(.BC),  ld_ml(.BC,.A, 0), inc_u16(.BC),    inc(.B),         dec(.B),         ld_fv_u8(.B),    todo,            ld_fl_u16(.SP), add_u16(.HL,.BC), ld_mr(.A,.BC, 0), dec_u16(.BC), inc(.C),   dec(.C),   ld_fv_u8(.C),    todo,      // 0x00
-    todo,            ld_fv_u16(.DE),  ld_ml(.DE,.A, 0), inc_u16(.DE),    inc(.D),         dec(.D),         ld_fv_u8(.D),    todo,            todo,           add_u16(.HL,.DE), ld_mr(.A,.DE, 0), dec_u16(.DE), inc(.E),   dec(.E),   ld_fv_u8(.E),    todo,      // 0x10
-    todo,            ld_fv_u16(.HL),  ld_ml(.HL,.A, 1), inc_u16(.HL),    inc(.H),         dec(.H),         ld_fv_u8(.H),    todo,            todo,           add_u16(.HL,.HL), ld_mr(.A,.HL, 1), dec_u16(.HL), inc(.L),   dec(.L),   ld_fv_u8(.L),    todo,      // 0x20
-    todo,            ld_fv_u16(.SP),  ld_ml(.HL,.A,-1), inc_u16(.SP),    inc_34,          dec_35,          ld_fmem(.HL),    todo,            todo,           add_u16(.HL,.SP), ld_mr(.A,.HL,-1), dec_u16(.SP), inc(.A),   dec(.A),   ld_fv_u8(.A),    todo,      // 0x30
-    ld(.B,.B),       ld(.B,.C),       ld(.B,.D),        ld(.B,.E),       ld(.B,.H),       ld(.B,.L),       ld_mr(.B,.HL,0), ld(.B,.A),       ld(.C,.B),      ld(.C,.C),        ld(.C,.D),        ld(.C,.E),    ld(.C,.H), ld(.C,.L), ld_mr(.C,.HL,0), ld(.C,.A), // 0x40
-    ld(.D,.B),       ld(.D,.C),       ld(.D,.D),        ld(.D,.E),       ld(.D,.H),       ld(.D,.L),       ld_mr(.D,.HL,0), ld(.D,.A),       ld(.E,.B),      ld(.E,.C),        ld(.E,.D),        ld(.E,.E),    ld(.E,.H), ld(.E,.L), ld_mr(.E,.HL,0), ld(.E,.A), // 0x50
-    ld(.H,.B),       ld(.H,.C),       ld(.H,.D),        ld(.H,.E),       ld(.H,.H),       ld(.H,.L),       ld_mr(.H,.HL,0), ld(.H,.A),       ld(.L,.B),      ld(.L,.C),        ld(.L,.D),        ld(.L,.E),    ld(.L,.H), ld(.L,.L), ld_mr(.L,.HL,0), ld(.L,.A), // 0x60
-    ld_ml(.HL,.B,0), ld_ml(.HL,.C,0), ld_ml(.HL,.D,0),  ld_ml(.HL,.E,0), ld_ml(.HL,.H,0), ld_ml(.HL,.L,0), todo,            ld_ml(.HL,.A,0), ld(.A,.B),      ld(.A,.C),        ld(.A,.D),        ld(.A,.E),    ld(.A,.H), ld(.A,.L), ld_mr(.A,.HL,0), ld(.A,.A), // 0x70
-    add(.A,.B),      add(.A,.C),      add(.A,.D),       add(.A,.E),      add(.A,.H),      add(.A,.L),      add_86(.A,.HL),  add(.A,.A),      todo,           todo,             todo,             todo,         todo,      todo,      todo,            todo,      // 0x80
-    sub(.A,.B),      sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),      sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      todo,           todo,             todo,             todo,         todo,      todo,      todo,            todo,      // 0x90
-    todo,            todo,            todo,             todo,            todo,            todo,            todo,            todo,            todo,           todo,             todo,             todo,         todo,      todo,      todo,            todo,      // 0xA0
-    todo,            todo,            todo,             todo,            todo,            todo,            todo,            todo,            todo,           todo,             todo,             todo,         todo,      todo,      todo,            todo,      // 0xB0
-    todo,            todo,            todo,             todo,            todo,            todo,            todo,            todo,            todo,           todo,             todo,             todo,         todo,      todo,      todo,            todo,      // 0xC0
-    todo,            todo,            todo,             todo,            todo,            todo,            todo,            todo,            todo,           todo,             todo,             todo,         todo,      todo,      todo,            todo,      // 0xD0
-    ld_ffu8_l,       ld_ffc_l,        todo,             todo,            todo,            todo,            todo,            todo,            todo,           todo,             ld_fl(.A),        todo,         todo,      todo,      todo,            todo,      // 0xE0
-    ld_ffu8_r,       ld_ffc_r,        todo,             todo,            todo,            todo,            todo,            todo,            ld_F8,          ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,      todo,      todo,            todo,      // 0xF0
+//  0x00,            0x01,            0x02,             0x03,            0x04,            0x05,            0x06,            0x07,            0x08,           0x09,             0x0A,             0x0B,         0x0C,       0x0D,       0x0E,            0x0F
+    nop_00,          ld_fv_u16(.BC),  ld_ml(.BC,.A, 0), inc_u16(.BC),    inc(.B),         dec(.B),         ld_fv_u8(.B),    todo,            ld_fl_u16(.SP), add_u16(.HL,.BC), ld_mr(.A,.BC, 0), dec_u16(.BC), inc(.C),    dec(.C),    ld_fv_u8(.C),    todo,       // 0x00
+    todo,            ld_fv_u16(.DE),  ld_ml(.DE,.A, 0), inc_u16(.DE),    inc(.D),         dec(.D),         ld_fv_u8(.D),    todo,            todo,           add_u16(.HL,.DE), ld_mr(.A,.DE, 0), dec_u16(.DE), inc(.E),    dec(.E),    ld_fv_u8(.E),    todo,       // 0x10
+    todo,            ld_fv_u16(.HL),  ld_ml(.HL,.A, 1), inc_u16(.HL),    inc(.H),         dec(.H),         ld_fv_u8(.H),    todo,            todo,           add_u16(.HL,.HL), ld_mr(.A,.HL, 1), dec_u16(.HL), inc(.L),    dec(.L),    ld_fv_u8(.L),    todo,       // 0x20
+    todo,            ld_fv_u16(.SP),  ld_ml(.HL,.A,-1), inc_u16(.SP),    inc_34,          dec_35,          ld_fmem(.HL),    todo,            todo,           add_u16(.HL,.SP), ld_mr(.A,.HL,-1), dec_u16(.SP), inc(.A),    dec(.A),    ld_fv_u8(.A),    todo,       // 0x30
+    ld(.B,.B),       ld(.B,.C),       ld(.B,.D),        ld(.B,.E),       ld(.B,.H),       ld(.B,.L),       ld_mr(.B,.HL,0), ld(.B,.A),       ld(.C,.B),      ld(.C,.C),        ld(.C,.D),        ld(.C,.E),    ld(.C,.H),  ld(.C,.L),  ld_mr(.C,.HL,0), ld(.C,.A),  // 0x40
+    ld(.D,.B),       ld(.D,.C),       ld(.D,.D),        ld(.D,.E),       ld(.D,.H),       ld(.D,.L),       ld_mr(.D,.HL,0), ld(.D,.A),       ld(.E,.B),      ld(.E,.C),        ld(.E,.D),        ld(.E,.E),    ld(.E,.H),  ld(.E,.L),  ld_mr(.E,.HL,0), ld(.E,.A),  // 0x50
+    ld(.H,.B),       ld(.H,.C),       ld(.H,.D),        ld(.H,.E),       ld(.H,.H),       ld(.H,.L),       ld_mr(.H,.HL,0), ld(.H,.A),       ld(.L,.B),      ld(.L,.C),        ld(.L,.D),        ld(.L,.E),    ld(.L,.H),  ld(.L,.L),  ld_mr(.L,.HL,0), ld(.L,.A),  // 0x60
+    ld_ml(.HL,.B,0), ld_ml(.HL,.C,0), ld_ml(.HL,.D,0),  ld_ml(.HL,.E,0), ld_ml(.HL,.H,0), ld_ml(.HL,.L,0), todo,            ld_ml(.HL,.A,0), ld(.A,.B),      ld(.A,.C),        ld(.A,.D),        ld(.A,.E),    ld(.A,.H),  ld(.A,.L),  ld_mr(.A,.HL,0), ld(.A,.A),  // 0x70
+    add(.A,.B),      add(.A,.C),      add(.A,.D),       add(.A,.E),      add(.A,.H),      add(.A,.L),      add_86(.A,.HL),  add(.A,.A),      adc(.A,.B),     adc(.A,.C),       adc(.A,.D),       adc(.A,.E),   adc(.A,.H), adc(.A,.L), adc_8E(.A,.HL),  adc(.A,.A), // 0x80
+    sub(.A,.B),      sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),      sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      sbc(.A,.B),     sbc(.A,.C),       sbc(.A,.D),       sbc(.A,.E),   sbc(.A,.H), sbc(.A,.L), sbc_9E(.A,.HL),  sbc(.A,.A), // 0x90
+    and(.A,.B),      and(.A,.C),      and(.A,.D),       and(.A,.E),      and(.A,.H),      and(.A,.L),      and_A6(.A,.HL),  and(.A,.A),      xor(.A,.B),     xor(.A,.C),       xor(.A,.D),       xor(.A,.E),   xor(.A,.H), xor(.A,.L), xor_AE(.A,.HL),  xor(.A,.A), // 0xA0
+    or(.A,.B),       or(.A,.C),       or(.A,.D),        or(.A,.E),       or(.A,.H),       or(.A,.L),       or_B6(.A,.HL),   or(.A,.A),       cp(.A,.B),      cp(.A,.C),        cp(.A,.D),        cp(.A,.E),    cp(.A,.H),  cp(.A,.L),  cp_BE(.A,.HL),   cp(.A,.A),  // 0xB0
+    todo,            todo,            todo,             todo,            todo,            todo,            add_C6(.A),      todo,            todo,           todo,             todo,             todo,         todo,       todo,       adc_CE(.A),      todo,       // 0xC0
+    todo,            todo,            todo,             todo,            todo,            todo,            sub_D6(.A),      todo,            todo,           todo,             todo,             todo,         todo,       todo,       sbc_DE(.A),      todo,       // 0xD0
+    ld_ffu8_l,       ld_ffc_l,        todo,             todo,            todo,            todo,            and_E6(.A),      todo,            add_E8,         todo,             ld_fl(.A),        todo,         todo,       todo,       and_E6(.A),      todo,       // 0xE0
+    ld_ffu8_r,       ld_ffc_r,        todo,             todo,            todo,            todo,            or_F6(.A),       todo,            ld_F8,          ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,       todo,       or_F6(.A),       todo,       // 0xF0
 }
 
 todo :: proc(^CPU) -> u8 {
@@ -106,14 +106,44 @@ dec_35 :: proc(cpu: ^CPU) -> u8 {
 
 add :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
-        left := get_reg(cpu, left_reg)
         right := get_reg(cpu, right_reg)
-
-        set_flag_z0hc(cpu, left, right)
-        set_reg(cpu, left_reg, left + right)
+        add_helper(cpu, left_reg, right, false)
 
         return 1
     }
+}
+
+// ADD A,(HL)
+add_86 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
+        add_helper(cpu, left_reg, right, false)
+
+        return 2
+    }
+}
+
+// ADD A,u8
+add_C6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        add_helper(cpu, left_reg, right, false)
+
+        return 2
+    }
+}
+
+// ADD SP,i8
+add_E8 :: proc(cpu: ^CPU) -> u8 {
+    val := transmute(i8)(fetch(cpu))
+    sp := get_reg_u16(cpu, .SP)
+
+    res, flags := add_u16_i8(sp, val)
+
+    set_reg_u16(cpu, .SP, res)
+    cpu.f = flags
+
+    return 4
 }
 
 add_u16 :: proc($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
@@ -132,54 +162,316 @@ add_u16 :: proc($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-add_86 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+adc :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
-        left := get_reg(cpu, left_reg)
-        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
-
-        set_flag_z0hc(cpu, left, right)
-        set_reg(cpu, left_reg, left + right)
-
-        return 2
-    }
-}
-
-sub :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
-    return proc(cpu: ^CPU) -> u8 {
-        left := get_reg(cpu, left_reg)
         right := get_reg(cpu, right_reg)
-
-        set_flag_z1hc(cpu, left, right)
-        set_reg(cpu, left_reg, left - right)
+        add_helper(cpu, left_reg, right, true)
 
         return 1
     }
 }
 
-sub_96 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+// ADC A,(HL)
+adc_8E :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
-        left := get_reg(cpu, left_reg)
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
-
-        set_flag_z1hc(cpu, left, right)
-        set_reg(cpu, left_reg, left - right)
+        add_helper(cpu, left_reg, right, true)
 
         return 2
     }
 }
 
-set_flag_z0hc :: proc(cpu: ^CPU, left, right: u8) {
-    cpu.f.z = (left + right) == 0
-    cpu.f.n = false
-    cpu.f.h = math.will_half_carry(left, right)
-    cpu.f.c = math.will_carry(left, right)
+// ADC A,u8
+adc_CE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        add_helper(cpu, left_reg, right, true)
+
+        return 2
+    }
 }
 
-set_flag_z1hc :: proc(cpu: ^CPU, left, right: u8) {
-    cpu.f.z = (left - right) == 0
+add_u16_i8 :: proc(a: u16, b: i8) -> (res: u16, flags: Flag_Reg) {
+    res = a
+    flags.z = false
+    flags.n = false
+
+    if b >= 0 {
+        abs_b := u16(b)
+        flags.h = math.will_half_carry_u16(a, abs_b)
+        flags.c = math.will_carry_u16(a, abs_b)
+        res += abs_b
+    } else {
+        abs_b := u16(abs(b))
+        flags.h = math.will_half_borrow_u16(a, abs_b)
+        flags.c = math.will_borrow_u16(a, abs_b)
+        res -= abs_b
+    }
+
+    return res, flags
+}
+
+add_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8, use_carry: bool) {
+    carry: u8 = 0
+    if cpu.f.c {
+        carry = 1
+    }
+
+    left_val := get_reg(cpu, left_reg)
+
+    h1 := math.will_half_carry(left_val, right_val)
+    c1 := math.will_carry(left_val, right_val)
+
+    left_val += right_val
+
+    h2 := math.will_half_carry(left_val, carry)
+    c2 := math.will_carry(left_val, carry)
+
+    left_val += carry
+
+    cpu.f.z = left_val == 0
+    cpu.f.n = false
+    cpu.f.h = h1 || h2
+    cpu.f.c = c1 || c2
+
+    set_reg(cpu, left_reg, left_val)
+}
+
+sub :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := get_reg(cpu, right_reg)
+        sub_helper(cpu, left_reg, right, false)
+
+        return 1
+    }
+}
+
+// SUB A,(HL)
+sub_96 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
+        sub_helper(cpu, left_reg, right, false)
+
+        return 2
+    }
+}
+
+// SUB A,u8
+sub_D6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        sub_helper(cpu, left_reg, right, false)
+
+        return 2
+    }
+}
+
+sbc :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := get_reg(cpu, right_reg)
+        sub_helper(cpu, left_reg, right, true)
+
+        return 1
+    }
+}
+
+// SBC A,(HL)
+sbc_9E :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
+        sub_helper(cpu, left_reg, right, true)
+
+        return 2
+    }
+}
+
+// SUB A,u8
+sbc_DE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        sub_helper(cpu, left_reg, right, true)
+
+        return 2
+    }
+}
+
+sub_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8, use_carry: bool) {
+    carry: u8 = 0
+    if cpu.f.c {
+        carry = 1
+    }
+
+    left_val := get_reg(cpu, left_reg)
+
+    h1 := math.will_half_borrow(left_val, right_val)
+    c1 := math.will_borrow(left_val, right_val)
+
+    left_val -= right_val
+
+    h2 := math.will_half_borrow(left_val, carry)
+    c2 := math.will_borrow(left_val, carry)
+
+    left_val -= carry
+
+    cpu.f.z = left_val == 0
     cpu.f.n = true
-    cpu.f.h = math.will_half_borrow(left, right)
-    cpu.f.c = math.will_borrow(left, right)
+    cpu.f.h = h1 || h2
+    cpu.f.c = c1 || c2
+
+    set_reg(cpu, left_reg, left_val)
+}
+
+and :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := get_reg(cpu, right_reg)
+        and_helper(cpu, left_reg, right)
+
+        return 1
+    }
+}
+
+and_A6 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
+        and_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+and_E6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        and_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+and_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
+    left_val := get_reg(cpu, left_reg)
+    left_val &= right_val
+    set_reg(cpu, left_reg, left_val)
+
+    cpu.f.z = left_val == 0
+    cpu.f.n = false
+    cpu.f.h = true
+    cpu.f.c = false
+}
+
+or :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := get_reg(cpu, right_reg)
+        or_helper(cpu, left_reg, right)
+
+        return 1
+    }
+}
+
+or_B6 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
+        or_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+or_F6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        or_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+or_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
+    left_val := get_reg(cpu, left_reg)
+    left_val |= right_val
+    set_reg(cpu, left_reg, left_val)
+
+    cpu.f.z = left_val == 0
+    cpu.f.n = false
+    cpu.f.h = false
+    cpu.f.c = false
+}
+
+xor :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := get_reg(cpu, right_reg)
+        xor_helper(cpu, left_reg, right)
+
+        return 1
+    }
+}
+
+xor_AE :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
+        xor_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+xor_EE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        xor_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+xor_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
+    left_val := get_reg(cpu, left_reg)
+    left_val ~= right_val
+    set_reg(cpu, left_reg, left_val)
+
+    cpu.f.z = left_val == 0
+    cpu.f.n = false
+    cpu.f.h = false
+    cpu.f.c = false
+}
+
+cp :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := get_reg(cpu, right_reg)
+        cp_helper(cpu, left_reg, right)
+
+        return 1
+    }
+}
+
+cp_BE :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := read_mem(cpu, get_reg_u16(cpu, right_reg))
+        cp_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+cp_FE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        right := fetch(cpu)
+        cp_helper(cpu, left_reg, right)
+
+        return 2
+    }
+}
+
+cp_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
+    left_val := get_reg(cpu, left_reg)
+    h := math.will_half_borrow(left_val, right_val)
+    c := math.will_borrow(left_val, right_val)
+    left_val -= right_val
+
+    cpu.f.z = left_val == 0
+    cpu.f.n = true
+    cpu.f.h = h
+    cpu.f.c = c
 }
 
 ld :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
@@ -291,6 +583,7 @@ ld_fr :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
+// LD HL,SP+i8
 ld_F8 :: proc(cpu: ^CPU) -> u8 {
     val := transmute(i8)(fetch(cpu))
     sp := get_reg_u16(cpu, .SP)
@@ -345,24 +638,4 @@ ld_ffc_r :: proc(cpu: ^CPU) -> u8 {
     set_reg(cpu, .A, val)
 
     return 2
-}
-
-add_u16_i8 :: proc(a: u16, b: i8) -> (res: u16, flags: Flag_Reg) {
-    res = a
-    flags.z = false
-    flags.n = false
-
-    if b >= 0 {
-        abs_b := u16(b)
-        flags.h = math.will_half_carry_u16(a, abs_b)
-        flags.c = math.will_carry_u16(a, abs_b)
-        res += abs_b
-    } else {
-        abs_b := u16(abs(b))
-        flags.h = math.will_half_borrow_u16(a, abs_b)
-        flags.c = math.will_borrow_u16(a, abs_b)
-        res -= abs_b
-    }
-
-    return res, flags
 }
