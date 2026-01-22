@@ -1,5 +1,6 @@
 package cpu
 
+import "base:runtime"
 import "core:fmt"
 import "core:testing"
 
@@ -48,7 +49,7 @@ fetch_test :: proc(t: ^testing.T) {
     cpu.pc = 0x1234
     
     // Test fetch
-    test_memory[0x1234] = 0x42
+    write_mem(&cpu, 0x1234, 0x42)
     val := fetch(&cpu)
     
     testing.expect(t, val == 0x42, "fetch value mismatch")
@@ -56,11 +57,22 @@ fetch_test :: proc(t: ^testing.T) {
     
     // Test fetch_u16
     cpu.pc = 0x1234
-    test_memory[0x1234] = 0x34
-    test_memory[0x1235] = 0x12
+    write_mem(&cpu, 0x1234, 0x34)
+    write_mem(&cpu, 0x1235, 0x12)
     
     val16 := fetch_u16(&cpu)
     
     testing.expect(t, val16 == 0x1234, "fetch_u16 value mismatch")
     testing.expect(t, cpu.pc == 0x1236, "PC not incremented correctly after fetch_u16")
+}
+
+@(test)
+pop_push_test :: proc(t: ^testing.T) {
+    cpu := test_cpu()
+    push(&cpu, 0x1234)
+    push(&cpu, 0x2345)
+    push(&cpu, 0x3456)
+    testing.expect(t, pop(&cpu) == 0x3456)
+    testing.expect(t, pop(&cpu) == 0x2345)
+    testing.expect(t, pop(&cpu) == 0x1234)
 }

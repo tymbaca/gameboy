@@ -4,7 +4,9 @@ import "core:testing"
 import "src:helper/math"
 
 test_cpu :: proc() -> CPU {
-	return CPU{}
+	return CPU{
+        sp = 0xFFFE,
+    }
 }
 
 @(test)
@@ -191,7 +193,7 @@ ld_fv_u8_test :: proc(t: ^testing.T) {
     cpu.pc = 0x100
     
     // Test LD A,n
-    test_memory[0x100] = 0x42
+    write_mem(&cpu, 0x100, 0x42)
     ld_a_n := ld_fv_u8(.A)
     cycles := ld_a_n(&cpu)
     
@@ -206,8 +208,8 @@ ld_fv_u16_test :: proc(t: ^testing.T) {
     cpu.pc = 0x100
     
     // Test LD BC,nn
-    test_memory[0x100] = 0x34  // low byte
-    test_memory[0x101] = 0x12  // high byte
+    write_mem(&cpu, 0x100, 0x34)  // low byte
+    write_mem(&cpu, 0x101, 0x12)  // high byte
     
     ld_bc_nn := ld_fv_u16(.BC)
     cycles := ld_bc_nn(&cpu)
@@ -265,7 +267,7 @@ add_mem_test :: proc(t: ^testing.T) {
     
     // Test ADD A,(HL)
     set_reg_u16(&cpu, .HL, 0x1234)
-    test_memory[0x1234] = 0x0F
+    write_mem(&cpu, 0x1234, 0x0F)
     cpu.a = 0x01
     
     add_a_hl := add_86(.A, .HL)
@@ -282,7 +284,7 @@ sub_mem_test :: proc(t: ^testing.T) {
     
     // Test SUB A,(HL)
     set_reg_u16(&cpu, .HL, 0x1234)
-    test_memory[0x1234] = 0x01
+    write_mem(&cpu, 0x1234, 0x01)
     cpu.a = 0x10
     
     sub_a_hl := sub_96(.A, .HL)
@@ -304,7 +306,7 @@ ld_ml_test :: proc(t: ^testing.T) {
     ld_hli_a := ld_ml(.HL, .A, 1)
     cycles := ld_hli_a(&cpu)
     
-    testing.expect(t, test_memory[0x1234] == 0x42, "LD (HL+),A memory write failed")
+    testing.expect(t, read_mem(&cpu, 0x1234) == 0x42, "LD (HL+),A memory write failed")
     testing.expect(t, get_reg_u16(&cpu, .HL) == 0x1235, "HL not incremented")
     testing.expect(t, cycles == 2, "LD (HL+),A cycles mismatch")
     
@@ -315,7 +317,7 @@ ld_ml_test :: proc(t: ^testing.T) {
     ld_hld_b := ld_ml(.HL, .B, -1)
     cycles = ld_hld_b(&cpu)
     
-    testing.expect(t, test_memory[0x5678] == 0x99, "LD (HL-),B memory write failed")
+    testing.expect(t, read_mem(&cpu, 0x5678) == 0x99, "LD (HL-),B memory write failed")
     testing.expect(t, get_reg_u16(&cpu, .HL) == 0x5677, "HL not decremented")
 }
 
@@ -325,7 +327,7 @@ ld_mr_test :: proc(t: ^testing.T) {
     
     // Test LD A,(HL+) (step = 1)
     set_reg_u16(&cpu, .HL, 0x1234)
-    test_memory[0x1234] = 0x55
+    write_mem(&cpu, 0x1234, 0x55)
     
     ld_a_hli := ld_mr(.A, .HL, 1)
     cycles := ld_a_hli(&cpu)
@@ -342,12 +344,12 @@ ld_fmem_test :: proc(t: ^testing.T) {
     
     // Test LD (HL),n
     set_reg_u16(&cpu, .HL, 0x1234)
-    test_memory[0x100] = 0x42
+    write_mem(&cpu, 0x100, 0x42)
     
     ld_hl_n := ld_fmem(.HL)
     cycles := ld_hl_n(&cpu)
     
-    testing.expect(t, test_memory[0x1234] == 0x42, "LD (HL),n failed")
+    testing.expect(t, read_mem(&cpu, 0x1234) == 0x42, "LD (HL),n failed")
     testing.expect(t, cpu.pc == 0x101, "PC not incremented")
     testing.expect(t, cycles == 3, "LD (HL),n cycles mismatch")
 }
@@ -358,14 +360,14 @@ ld_fl_test :: proc(t: ^testing.T) {
     cpu.pc = 0x100
     
     // Test LD (nn),A
-    test_memory[0x100] = 0x34  // low byte
-    test_memory[0x101] = 0x12  // high byte
+    write_mem(&cpu, 0x100, 0x34)  // low byte
+    write_mem(&cpu, 0x101, 0x12)  // high byte
     cpu.a = 0x42
     
     ld_nn_a := ld_fl(.A)
     cycles := ld_nn_a(&cpu)
     
-    testing.expect(t, test_memory[0x1234] == 0x42, "LD (nn),A failed")
+    testing.expect(t, read_mem(&cpu, 0x1234) == 0x42, "LD (nn),A failed")
     testing.expect(t, cpu.pc == 0x102, "PC not incremented correctly")
     testing.expect(t, cycles == 4, "LD (nn),A cycles mismatch")
 }
@@ -376,9 +378,9 @@ ld_fr_test :: proc(t: ^testing.T) {
     cpu.pc = 0x100
     
     // Test LD A,(nn)
-    test_memory[0x100] = 0x34  // low byte
-    test_memory[0x101] = 0x12  // high byte
-    test_memory[0x1234] = 0x99
+    write_mem(&cpu, 0x100, 0x34)  // low byte
+    write_mem(&cpu, 0x101, 0x12)  // high byte
+    write_mem(&cpu, 0x1234, 0x99)
     cpu.a = 0
     
     ld_a_nn := ld_fr(.A)
@@ -396,14 +398,14 @@ ld_fl_u16_test :: proc(t: ^testing.T) {
     
     // Test LD (nn),SP
     set_reg_u16(&cpu, .SP, 0x1234)
-    test_memory[0x100] = 0x34  // low byte
-    test_memory[0x101] = 0x12  // high byte
+    write_mem(&cpu, 0x100, 0x34)  // low byte
+    write_mem(&cpu, 0x101, 0x12)  // high byte
     
     ld_nn_sp := ld_fl_u16(.SP)
     cycles := ld_nn_sp(&cpu)
     
-    testing.expect(t, test_memory[0x1234] == 0x34, "LD (nn),SP low byte failed")
-    testing.expect(t, test_memory[0x1235] == 0x12, "LD (nn),SP high byte failed")
+    testing.expect(t, read_mem(&cpu, 0x1234) == 0x34, "LD (nn),SP low byte failed")
+    testing.expect(t, read_mem(&cpu, 0x1235) == 0x12, "LD (nn),SP high byte failed")
     testing.expect(t, cpu.pc == 0x102, "PC not incremented correctly")
     testing.expect(t, cycles == 5, "LD (nn),SP cycles mismatch")
 }
@@ -414,12 +416,12 @@ ld_ff_test :: proc(t: ^testing.T) {
     cpu.pc = 0x100
     
     // Test LD (FF00+u8),A
-    test_memory[0x100] = 0x80  // offset
+    write_mem(&cpu, 0x100, 0x80)  // offset
     cpu.a = 0x42
     
     ld_ffu8_l(&cpu)
     
-    testing.expect(t, test_memory[0xFF80] == 0x42, "LD (FF00+u8),A failed")
+    testing.expect(t, read_mem(&cpu, 0xFF80) == 0x42, "LD (FF00+u8),A failed")
     testing.expect(t, cpu.pc == 0x101, "PC not incremented")
     
     // Test LD (FF00+C),A
@@ -428,12 +430,12 @@ ld_ff_test :: proc(t: ^testing.T) {
     
     ld_ffc_l(&cpu)
     
-    testing.expect(t, test_memory[0xFF90] == 0x99, "LD (FF00+C),A failed")
+    testing.expect(t, read_mem(&cpu, 0xFF90) == 0x99, "LD (FF00+C),A failed")
     
     // Test LD A,(FF00+u8)
     cpu.pc = 0x100
-    test_memory[0x100] = 0xA0
-    test_memory[0xFFA0] = 0x55
+    write_mem(&cpu, 0x100, 0xA0)
+    write_mem(&cpu, 0xFFA0, 0x55)
     
     ld_ffu8_r(&cpu)
     
@@ -441,7 +443,7 @@ ld_ff_test :: proc(t: ^testing.T) {
     
     // Test LD A,(FF00+C)
     cpu.c = 0xB0
-    test_memory[0xFFB0] = 0x77
+    write_mem(&cpu, 0xFFB0, 0x77)
     
     ld_ffc_r(&cpu)
     
@@ -455,7 +457,7 @@ ld_F8_test :: proc(t: ^testing.T) {
     
     // Test LD HL,SP+e8 with positive offset
     cpu.sp = 0x0FFF
-    test_memory[0x100] = 0x01  // +1 as i8
+    write_mem(&cpu, 0x100, 0x01)  // +1 as i8
     
     ld_F8(&cpu)
     
@@ -471,11 +473,11 @@ inc_mem_test :: proc(t: ^testing.T) {
     
     // Test INC (HL)
     set_reg_u16(&cpu, .HL, 0x1234)
-    test_memory[0x1234] = 0x0F
+    write_mem(&cpu, 0x1234, 0x0F)
     
     cycles := inc_34(&cpu)
     
-    testing.expect(t, test_memory[0x1234] == 0x10, "INC (HL) failed")
+    testing.expect(t, read_mem(&cpu, 0x1234) == 0x10, "INC (HL) failed")
     testing.expect(t, cpu.f.h == true, "Half-carry flag not set")
     testing.expect(t, cpu.f.n == false, "Negative flag incorrectly set")
     testing.expect(t, cycles == 3, "INC (HL) cycles mismatch")
@@ -487,11 +489,11 @@ dec_mem_test :: proc(t: ^testing.T) {
     
     // Test DEC (HL)
     set_reg_u16(&cpu, .HL, 0x1234)
-    test_memory[0x1234] = 0x01
+    write_mem(&cpu, 0x1234, 0x01)
     
     cycles := dec_35(&cpu)
     
-    testing.expect(t, test_memory[0x1234] == 0x00, "DEC (HL) failed")
+    testing.expect(t, read_mem(&cpu, 0x1234) == 0x00, "DEC (HL) failed")
     testing.expect(t, cpu.f.z == true, "Zero flag not set")
     testing.expect(t, cpu.f.n == true, "Negative flag not set")
     testing.expect(t, cycles == 3, "DEC (HL) cycles mismatch")
@@ -551,29 +553,6 @@ add_reg_u16_test :: proc(t: ^testing.T) {
 }
 
 @(test)
-set_flag_functions_test :: proc(t: ^testing.T) {
-    cpu := test_cpu()
-    
-    // Test set_flag_z0hc (for addition)
-    cpu.a = 0x0F
-    cpu.b = 0x01
-    set_flag_z0hc(&cpu, cpu.a, cpu.b)
-    
-    testing.expect(t, cpu.f.z == false, "set_flag_z0hc: Zero flag incorrect")
-    testing.expect(t, cpu.f.n == false, "set_flag_z0hc: Negative flag should be false")
-    testing.expect(t, cpu.f.h == true, "set_flag_z0hc: Half-carry flag not set")
-    
-    // Test set_flag_z1hc (for subtraction)
-    cpu.a = 0x10
-    cpu.b = 0x01
-    set_flag_z1hc(&cpu, cpu.a, cpu.b)
-    
-    testing.expect(t, cpu.f.z == false, "set_flag_z1hc: Zero flag incorrect")
-    testing.expect(t, cpu.f.n == true, "set_flag_z1hc: Negative flag should be true")
-    testing.expect(t, cpu.f.h == true, "set_flag_z1hc: Half-borrow flag not set")
-}
-
-@(test)
 add_u16_i8_function_test :: proc(t: ^testing.T) {
     // Test the standalone add_u16_i8 function
     // Positive offset
@@ -594,3 +573,10 @@ add_u16_i8_function_test :: proc(t: ^testing.T) {
     testing.expect(t, flags.h == false, "add_u16_i8: Half-carry should be false")
     testing.expect(t, flags.c == false, "add_u16_i8: Carry should be false")
 }
+
+// @(test)
+// jr_jp_test :: proc(t: ^testing.T) {
+//     cpu := test_cpu()
+//     cpu.pc = 0x0000
+//     write_mem(&cpu, )
+// }

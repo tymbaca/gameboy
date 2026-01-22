@@ -38,6 +38,41 @@ Flag_Reg :: bit_field u8 {
     z: bool | 1, // 8 Zero Flag
 }
 
+Flag_Kind :: enum {
+    Z, // 8 Zero Flag
+    N, // 7 Negative Flag
+    H, // 6 Half-Carry Flag
+    C, // 5 Carry Flag
+}
+
+get_flag :: proc(cpu: ^CPU, flag: Flag_Kind) -> bool {
+    switch flag {
+    case .Z:
+        return cpu.f.z
+    case .N:
+        return cpu.f.n
+    case .H:
+        return cpu.f.h
+    case .C:
+        return cpu.f.c
+    }
+
+    log.panic("unreachable, got unknown flag kind", flag)
+}
+
+set_flag :: proc(cpu: ^CPU, flag: Flag_Kind, val: bool) {
+    switch flag {
+    case .Z:
+        cpu.f.z = val
+    case .N:
+        cpu.f.n = val
+    case .H:
+        cpu.f.h = val
+    case .C:
+        cpu.f.c = val
+    }
+}
+
 get_reg :: proc(cpu: ^CPU, reg: Reg) -> u8 {
     switch reg {
     case .A:
@@ -146,7 +181,6 @@ dec_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) {
     val := get_reg_u16(cpu, reg)
     set_reg_u16(cpu, reg, val - 1)
 }
-// TODO: tests
 
 execute :: proc(cpu: ^CPU) -> u8 {
     op := fetch(cpu)
@@ -159,9 +193,59 @@ fetch :: proc(cpu: ^CPU) -> u8 {
     return val
 }
 
+fetch_i8 :: proc(cpu: ^CPU) -> i8 {
+    return transmute(i8)(fetch(cpu))
+}
+
 fetch_u16 :: proc(cpu: ^CPU) -> u16 {
     low := fetch(cpu)
     high := fetch(cpu)
 
     return math.merge_u16(high, low)
+}
+
+read_mem :: proc(cpu: ^CPU, addr: u16) -> u8 {
+    return bus.read(&cpu.bus, addr)
+}
+
+write_mem :: proc(cpu: ^CPU, addr: u16, val: u8) {
+    bus.write(&cpu.bus, addr, val)
+}
+
+pop :: proc(cpu: ^CPU) -> u16 {
+    assert(cpu.sp <= 0xFFFE, "you'r cooked bro")
+    assert(cpu.sp != 0xFFFE, "pop called when stack is empty")
+
+    low := read_mem(cpu, cpu.sp)
+    high := read_mem(cpu, cpu.sp+1)
+    cpu.sp += 2
+
+    return math.merge_u16(high, low)
+} 
+
+push :: proc(cpu: ^CPU, val: u16) {
+    cpu.sp -= 2
+    high, low := math.split_u16(val)
+    write_mem(cpu, cpu.sp, low)
+    write_mem(cpu, cpu.sp+1, high)
+}
+
+add_u16_i8 :: proc(a: u16, b: i8) -> (res: u16, flags: Flag_Reg) {
+    res = a
+    flags.z = false
+    flags.n = false
+
+    if b >= 0 {
+        abs_b := u16(b)
+        flags.h = math.will_half_carry_u16(a, abs_b)
+        flags.c = math.will_carry_u16(a, abs_b)
+        res += abs_b
+    } else {
+        abs_b := u16(abs(b))
+        flags.h = math.will_half_borrow_u16(a, abs_b)
+        flags.c = math.will_borrow_u16(a, abs_b)
+        res -= abs_b
+    }
+
+    return res, flags
 }

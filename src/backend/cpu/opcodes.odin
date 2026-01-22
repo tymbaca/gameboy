@@ -18,10 +18,10 @@ OPCODES: [256]proc(^CPU) -> u8 = {
     sub(.A,.B),      sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),      sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      sbc(.A,.B),     sbc(.A,.C),       sbc(.A,.D),       sbc(.A,.E),   sbc(.A,.H), sbc(.A,.L), sbc_9E(.A,.HL),  sbc(.A,.A), // 0x90
     and(.A,.B),      and(.A,.C),      and(.A,.D),       and(.A,.E),      and(.A,.H),      and(.A,.L),      and_A6(.A,.HL),  and(.A,.A),      xor(.A,.B),     xor(.A,.C),       xor(.A,.D),       xor(.A,.E),   xor(.A,.H), xor(.A,.L), xor_AE(.A,.HL),  xor(.A,.A), // 0xA0
     or(.A,.B),       or(.A,.C),       or(.A,.D),        or(.A,.E),       or(.A,.H),       or(.A,.L),       or_B6(.A,.HL),   or(.A,.A),       cp(.A,.B),      cp(.A,.C),        cp(.A,.D),        cp(.A,.E),    cp(.A,.H),  cp(.A,.L),  cp_BE(.A,.HL),   cp(.A,.A),  // 0xB0
-    todo,            todo,            todo,             todo,            todo,            todo,            add_C6(.A),      todo,            todo,           todo,             todo,             todo,         todo,       todo,       adc_CE(.A),      todo,       // 0xC0
-    todo,            todo,            todo,             todo,            todo,            todo,            sub_D6(.A),      todo,            todo,           todo,             todo,             todo,         todo,       todo,       sbc_DE(.A),      todo,       // 0xD0
-    ld_ffu8_l,       ld_ffc_l,        todo,             todo,            todo,            todo,            and_E6(.A),      todo,            add_E8,         todo,             ld_fl(.A),        todo,         todo,       todo,       and_E6(.A),      todo,       // 0xE0
-    ld_ffu8_r,       ld_ffc_r,        todo,             todo,            todo,            todo,            or_F6(.A),       todo,            ld_F8,          ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,       todo,       or_F6(.A),       todo,       // 0xF0
+    todo,            pop_reg(.BC),    jp_if(.Z, false), todo,            todo,            push_reg(.BC),   add_C6(.A),      todo,            todo,           todo,             jp_if(.Z, true), todo,         todo,       todo,       adc_CE(.A),      todo,       // 0xC0
+    todo,            pop_reg(.DE),    jp_if(.C, false), todo,            todo,            push_reg(.DE),   sub_D6(.A),      todo,            todo,           todo,             jp_if(.C, true), todo,         todo,       todo,       sbc_DE(.A),      todo,       // 0xD0
+    ld_ffu8_l,       pop_reg(.HL),    ld_ffc_l,         todo,            todo,            push_reg(.HL),   and_E6(.A),      todo,            add_E8,         todo,             ld_fl(.A),        todo,         todo,       todo,       and_E6(.A),      todo,       // 0xE0
+    ld_ffu8_r,       pop_reg(.AF),    ld_ffc_r,         todo,            todo,            push_reg(.AF),   or_F6(.A),       todo,            ld_F8,          ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,       todo,       or_F6(.A),       todo,       // 0xF0
 }
 
 todo :: proc(^CPU) -> u8 {
@@ -135,7 +135,7 @@ add_C6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 
 // ADD SP,i8
 add_E8 :: proc(cpu: ^CPU) -> u8 {
-    val := transmute(i8)(fetch(cpu))
+    val := fetch_i8(cpu)
     sp := get_reg_u16(cpu, .SP)
 
     res, flags := add_u16_i8(sp, val)
@@ -191,29 +191,9 @@ adc_CE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-add_u16_i8 :: proc(a: u16, b: i8) -> (res: u16, flags: Flag_Reg) {
-    res = a
-    flags.z = false
-    flags.n = false
-
-    if b >= 0 {
-        abs_b := u16(b)
-        flags.h = math.will_half_carry_u16(a, abs_b)
-        flags.c = math.will_carry_u16(a, abs_b)
-        res += abs_b
-    } else {
-        abs_b := u16(abs(b))
-        flags.h = math.will_half_borrow_u16(a, abs_b)
-        flags.c = math.will_borrow_u16(a, abs_b)
-        res -= abs_b
-    }
-
-    return res, flags
-}
-
 add_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8, use_carry: bool) {
     carry: u8 = 0
-    if cpu.f.c {
+    if use_carry && cpu.f.c {
         carry = 1
     }
 
@@ -297,7 +277,7 @@ sbc_DE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 
 sub_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8, use_carry: bool) {
     carry: u8 = 0
-    if cpu.f.c {
+    if use_carry && cpu.f.c {
         carry = 1
     }
 
@@ -585,7 +565,7 @@ ld_fr :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 
 // LD HL,SP+i8
 ld_F8 :: proc(cpu: ^CPU) -> u8 {
-    val := transmute(i8)(fetch(cpu))
+    val := fetch_i8(cpu)
     sp := get_reg_u16(cpu, .SP)
 
     res, flags := add_u16_i8(sp, val)
@@ -638,4 +618,70 @@ ld_ffc_r :: proc(cpu: ^CPU) -> u8 {
     set_reg(cpu, .A, val)
 
     return 2
+}
+
+pop_reg :: proc($reg: Reg_u16) -> proc(^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := pop(cpu)
+        set_reg_u16(cpu, reg, val)
+
+        return 3
+    }
+}
+
+push_reg :: proc($reg: Reg_u16) -> proc(^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := get_reg_u16(cpu, reg)
+        push(cpu, val)
+
+        return 4
+    }
+}
+
+jp_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        addr := fetch_u16(cpu)
+
+        if get_flag(cpu, flag) == is {
+            set_reg_u16(cpu, .PC, addr)
+            return 4
+        } else {
+            return 3
+        }
+    }
+}
+
+jp_C3 :: proc(cpu: ^CPU) -> u8 {
+    addr := fetch_u16(cpu)
+    set_reg_u16(cpu, .PC, addr)
+    return 4
+}
+
+jp_E9 :: proc(cpu: ^CPU) -> u8 {
+    addr := get_reg_u16(cpu, .HL)
+    set_reg_u16(cpu, .PC, addr)
+    return 1
+}
+
+jr_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        offset := fetch_i8(cpu)
+
+        addr := get_reg_u16(cpu, .PC)
+        if get_flag(cpu, flag) == is {
+            addr, _ = add_u16_i8(addr, offset)
+            set_reg_u16(cpu, .PC, addr)
+            return 3
+        } else {
+            return 2
+        }
+    }
+}
+
+jp_18 :: proc(cpu: ^CPU) -> u8 {
+    offset := fetch_i8(cpu)
+    addr := get_reg_u16(cpu, .PC)
+    addr, _ = add_u16_i8(addr, offset)
+    set_reg_u16(cpu, .PC, addr)
+    return 3
 }
