@@ -10,4 +10,7 @@ range:
 test:
 	@odin test tests/ -out:bin/test.bin -all-packages $(TEST_FLAGS) $(FLAGS)
 
+build-test:
+	@odin build tests/ -out:bin/test.bin -all-packages $(TEST_FLAGS) $(FLAGS)
+
 .PHONY: range

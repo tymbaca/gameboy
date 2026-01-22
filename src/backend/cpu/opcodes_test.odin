@@ -574,9 +574,47 @@ add_u16_i8_function_test :: proc(t: ^testing.T) {
     testing.expect(t, flags.c == false, "add_u16_i8: Carry should be false")
 }
 
-// @(test)
-// jr_jp_test :: proc(t: ^testing.T) {
-//     cpu := test_cpu()
-//     cpu.pc = 0x0000
-//     write_mem(&cpu, )
-// }
+@(test)
+jp_jr_test :: proc(t: ^testing.T) {
+    cpu := test_cpu()
+
+    cpu.pc = 0x0000
+    write_mem(&cpu, 0x0000, 0xC3) // JP 0x1234
+    write_mem(&cpu, 0x0001, 0x34)
+    write_mem(&cpu, 0x0002, 0x12)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x1234)
+
+    write_mem(&cpu, 0x1234, 0xC2) // JP NZ 0x2200
+    write_mem(&cpu, 0x1235, 0x00)
+    write_mem(&cpu, 0x1236, 0x22)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2200)
+
+    cpu.f.z = true
+    write_mem(&cpu, 0x2200, 0xC2) // JP NZ 0x3300
+    write_mem(&cpu, 0x2201, 0x00)
+    write_mem(&cpu, 0x2202, 0x33)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2203)
+
+    write_mem(&cpu, 0x2203, 0x18) // JR +32
+    write_mem(&cpu, 0x2204, 32)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2225) // 0x2205 + 0x0020 (32)
+
+    write_mem(&cpu, 0x2225, 0x38) // JR C -16
+    write_mem(&cpu, 0x2226, transmute(u8)i8(-16))
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2227) // didn't happen
+
+    cpu.pc = 0x2225
+    cpu.f.c = true
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2217) // 0x2225 - 0x0010 (16)
+}
