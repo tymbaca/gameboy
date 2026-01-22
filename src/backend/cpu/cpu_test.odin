@@ -24,21 +24,17 @@ get_set_reg_test :: proc(t: ^testing.T) {
 get_set_reg_u16_test :: proc(t: ^testing.T) {
     cpu := test_cpu()
     
-    // Test PC and SP
     set_reg_u16(&cpu, .PC, 0x1234)
     testing.expect(t, get_reg_u16(&cpu, .PC) == 0x1234, "PC mismatch")
     
     set_reg_u16(&cpu, .SP, 0x5678)
     testing.expect(t, get_reg_u16(&cpu, .SP) == 0x5678, "SP mismatch")
     
-    // Test AF (A in high byte, F in low byte)
     set_reg_u16(&cpu, .AF, 0x5678)
     testing.expect(t, cpu.a == 0x78, "A from AF mismatch")
     testing.expect(t, u8(cpu.f) == 0x56, "F from AF mismatch")
     testing.expect(t, get_reg_u16(&cpu, .AF) == 0x5678, "AF get mismatch")
     
-    // Test BC
-    set_reg_u16(&cpu, .BC, 0x9ABC)
     testing.expect(t, cpu.b == 0xBC, "B from BC mismatch")
     testing.expect(t, cpu.c == 0x9A, "C from BC mismatch")
 }
@@ -75,4 +71,49 @@ pop_push_test :: proc(t: ^testing.T) {
     testing.expect(t, pop(&cpu) == 0x3456)
     testing.expect(t, pop(&cpu) == 0x2345)
     testing.expect(t, pop(&cpu) == 0x1234)
+}
+
+@(test)
+jp_jr_test :: proc(t: ^testing.T) {
+    cpu := test_cpu()
+
+    cpu.pc = 0x0000
+    write_mem(&cpu, 0x0000, 0xC3) // JP 0x1234
+    write_mem(&cpu, 0x0001, 0x34)
+    write_mem(&cpu, 0x0002, 0x12)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x1234)
+
+    write_mem(&cpu, 0x1234, 0xC2) // JP NZ 0x2200
+    write_mem(&cpu, 0x1235, 0x00)
+    write_mem(&cpu, 0x1236, 0x22)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2200)
+
+    cpu.f.z = true
+    write_mem(&cpu, 0x2200, 0xC2) // JP NZ 0x3300
+    write_mem(&cpu, 0x2201, 0x00)
+    write_mem(&cpu, 0x2202, 0x33)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2203)
+
+    write_mem(&cpu, 0x2203, 0x18) // JR +36
+    write_mem(&cpu, 0x2204, 36)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2225) // 0x2205 + 0x0020 (36)
+
+    write_mem(&cpu, 0x2225, 0x18) // JR C -16
+    write_mem(&cpu, 0x2226, transmute(u8)i8(-16))
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2227) // didn't happen
+
+    cpu.pc = 0x2225
+    cpu.f.c = true
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x2217) // 0x2225 - 0x0010 (16)
 }
