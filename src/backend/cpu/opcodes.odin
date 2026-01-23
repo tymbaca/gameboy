@@ -18,8 +18,8 @@ OPCODES: [256]proc(^CPU) -> u8 = {
     sub(.A,.B),       sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),      sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      sbc(.A,.B),      sbc(.A,.C),       sbc(.A,.D),       sbc(.A,.E),   sbc(.A,.H), sbc(.A,.L), sbc_9E(.A,.HL),  sbc(.A,.A), // 0x90
     and(.A,.B),       and(.A,.C),      and(.A,.D),       and(.A,.E),      and(.A,.H),      and(.A,.L),      and_A6(.A,.HL),  and(.A,.A),      xor(.A,.B),      xor(.A,.C),       xor(.A,.D),       xor(.A,.E),   xor(.A,.H), xor(.A,.L), xor_AE(.A,.HL),  xor(.A,.A), // 0xA0
     or(.A,.B),        or(.A,.C),       or(.A,.D),        or(.A,.E),       or(.A,.H),       or(.A,.L),       or_B6(.A,.HL),   or(.A,.A),       cp(.A,.B),       cp(.A,.C),        cp(.A,.D),        cp(.A,.E),    cp(.A,.H),  cp(.A,.L),  cp_BE(.A,.HL),   cp(.A,.A),  // 0xB0
-    todo,             pop_reg(.BC),    jp_if(.Z, false), jp_C3,           todo,            push_reg(.BC),   add_C6(.A),      todo,            todo,            todo,             jp_if(.Z, true), todo,         todo,       todo,       adc_CE(.A),      todo,       // 0xC0
-    todo,             pop_reg(.DE),    jp_if(.C, false), todo,            todo,            push_reg(.DE),   sub_D6(.A),      todo,            todo,            todo,             jp_if(.C, true), todo,         todo,       todo,       sbc_DE(.A),      todo,       // 0xD0
+    todo,             pop_reg(.BC),    jp_if(.Z, false), jp_C3,           todo,            push_reg(.BC),   add_C6(.A),      todo,            todo,            todo,             jp_if(.Z, true),  todo,         todo,       call_cd,    adc_CE(.A),      todo,       // 0xC0
+    todo,             pop_reg(.DE),    jp_if(.C, false), todo,            todo,            push_reg(.DE),   sub_D6(.A),      todo,            todo,            todo,             jp_if(.C, true),  todo,         todo,       todo,       sbc_DE(.A),      todo,       // 0xD0
     ld_ffu8_l,        pop_reg(.HL),    ld_ffc_l,         todo,            todo,            push_reg(.HL),   and_E6(.A),      todo,            add_E8,          jp_E9,            ld_fl(.A),        todo,         todo,       todo,       and_E6(.A),      todo,       // 0xE0
     ld_ffu8_r,        pop_reg(.AF),    ld_ffc_r,         todo,            todo,            push_reg(.AF),   or_F6(.A),       todo,            ld_F8,           ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,       todo,       or_F6(.A),       todo,       // 0xF0
 }
@@ -684,4 +684,25 @@ jr_18 :: proc(cpu: ^CPU) -> u8 {
     addr, _ = add_u16_i8(addr, offset)
     set_reg_u16(cpu, .PC, addr)
     return 3
+}
+
+call_cd :: proc(cpu: ^CPU) -> u8 {
+    addr := fetch_u16(cpu)
+    push(cpu, cpu.pc)
+    cpu.pc = addr
+    return 6
+}
+
+call_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        addr := fetch_u16(cpu)
+
+        if get_flag(cpu, flag) == is {
+            push(cpu, cpu.pc)
+            cpu.pc = addr
+            return 6
+        } else {
+            return 3
+        }
+    }
 }

@@ -4,9 +4,7 @@ import "core:testing"
 import "src:helper/math"
 
 test_cpu :: proc() -> CPU {
-	return CPU{
-        sp = 0xFFFE,
-    }
+	return new_cpu()
 }
 
 @(test)
@@ -617,4 +615,19 @@ jp_jr_test :: proc(t: ^testing.T) {
     cpu.f.c = true
     execute(&cpu)
     testing.expect_value(t, cpu.pc, 0x2217) // 0x2225 - 0x0010 (16)
+}
+
+@(test)
+call_test :: proc(t: ^testing.T) {
+    cpu := test_cpu()
+
+    write_mem(&cpu, 0x0000, 0xCD) // CALL 0x1020
+    write_mem(&cpu, 0x0001, 0x20)
+    write_mem(&cpu, 0x0002, 0x10)
+
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x1020)
+    testing.expect_value(t, cpu.sp, SP_START - 2)
+    
+    testing.expect_value(t, pop(&cpu), 0x0003)
 }

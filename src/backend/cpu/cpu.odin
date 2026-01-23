@@ -14,6 +14,14 @@ CPU :: struct {
     bus: bus.Bus,
 }
 
+SP_START :: 0xFFFE
+
+new_cpu :: proc() -> CPU {
+	return CPU{
+        sp = SP_START,
+    }
+}
+
 Reg :: enum {
     A, F, 
     B, C, 
