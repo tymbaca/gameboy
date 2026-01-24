@@ -5,23 +5,23 @@ import "src:helper/math"
 // https://izik1.github.io/gbops/
 
 OPCODES: [256]proc(^CPU) -> u8 = {
-//  0x00,             0x01,            0x02,             0x03,            0x04,            0x05,            0x06,            0x07,            0x08,            0x09,             0x0A,             0x0B,         0x0C,       0x0D,       0x0E,            0x0F
-    nop_00,           ld_fv_u16(.BC),  ld_ml(.BC,.A, 0), inc_u16(.BC),    inc(.B),         dec(.B),         ld_fv_u8(.B),    todo,            ld_fl_u16(.SP),  add_u16(.HL,.BC), ld_mr(.A,.BC, 0), dec_u16(.BC), inc(.C),    dec(.C),    ld_fv_u8(.C),    todo,       // 0x00
-    todo,             ld_fv_u16(.DE),  ld_ml(.DE,.A, 0), inc_u16(.DE),    inc(.D),         dec(.D),         ld_fv_u8(.D),    todo,            jr_18,           add_u16(.HL,.DE), ld_mr(.A,.DE, 0), dec_u16(.DE), inc(.E),    dec(.E),    ld_fv_u8(.E),    todo,       // 0x10
-    jr_if(.Z, false), ld_fv_u16(.HL),  ld_ml(.HL,.A, 1), inc_u16(.HL),    inc(.H),         dec(.H),         ld_fv_u8(.H),    todo,            jr_if(.Z, true), add_u16(.HL,.HL), ld_mr(.A,.HL, 1), dec_u16(.HL), inc(.L),    dec(.L),    ld_fv_u8(.L),    todo,       // 0x20
-    jr_if(.C, false), ld_fv_u16(.SP),  ld_ml(.HL,.A,-1), inc_u16(.SP),    inc_34,          dec_35,          ld_fmem(.HL),    todo,            jr_if(.C, true), add_u16(.HL,.SP), ld_mr(.A,.HL,-1), dec_u16(.SP), inc(.A),    dec(.A),    ld_fv_u8(.A),    todo,       // 0x30
-    ld(.B,.B),        ld(.B,.C),       ld(.B,.D),        ld(.B,.E),       ld(.B,.H),       ld(.B,.L),       ld_mr(.B,.HL,0), ld(.B,.A),       ld(.C,.B),       ld(.C,.C),        ld(.C,.D),        ld(.C,.E),    ld(.C,.H),  ld(.C,.L),  ld_mr(.C,.HL,0), ld(.C,.A),  // 0x40
-    ld(.D,.B),        ld(.D,.C),       ld(.D,.D),        ld(.D,.E),       ld(.D,.H),       ld(.D,.L),       ld_mr(.D,.HL,0), ld(.D,.A),       ld(.E,.B),       ld(.E,.C),        ld(.E,.D),        ld(.E,.E),    ld(.E,.H),  ld(.E,.L),  ld_mr(.E,.HL,0), ld(.E,.A),  // 0x50
-    ld(.H,.B),        ld(.H,.C),       ld(.H,.D),        ld(.H,.E),       ld(.H,.H),       ld(.H,.L),       ld_mr(.H,.HL,0), ld(.H,.A),       ld(.L,.B),       ld(.L,.C),        ld(.L,.D),        ld(.L,.E),    ld(.L,.H),  ld(.L,.L),  ld_mr(.L,.HL,0), ld(.L,.A),  // 0x60
-    ld_ml(.HL,.B,0),  ld_ml(.HL,.C,0), ld_ml(.HL,.D,0),  ld_ml(.HL,.E,0), ld_ml(.HL,.H,0), ld_ml(.HL,.L,0), todo,            ld_ml(.HL,.A,0), ld(.A,.B),       ld(.A,.C),        ld(.A,.D),        ld(.A,.E),    ld(.A,.H),  ld(.A,.L),  ld_mr(.A,.HL,0), ld(.A,.A),  // 0x70
-    add(.A,.B),       add(.A,.C),      add(.A,.D),       add(.A,.E),      add(.A,.H),      add(.A,.L),      add_86(.A,.HL),  add(.A,.A),      adc(.A,.B),      adc(.A,.C),       adc(.A,.D),       adc(.A,.E),   adc(.A,.H), adc(.A,.L), adc_8E(.A,.HL),  adc(.A,.A), // 0x80
-    sub(.A,.B),       sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),      sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      sbc(.A,.B),      sbc(.A,.C),       sbc(.A,.D),       sbc(.A,.E),   sbc(.A,.H), sbc(.A,.L), sbc_9E(.A,.HL),  sbc(.A,.A), // 0x90
-    and(.A,.B),       and(.A,.C),      and(.A,.D),       and(.A,.E),      and(.A,.H),      and(.A,.L),      and_A6(.A,.HL),  and(.A,.A),      xor(.A,.B),      xor(.A,.C),       xor(.A,.D),       xor(.A,.E),   xor(.A,.H), xor(.A,.L), xor_AE(.A,.HL),  xor(.A,.A), // 0xA0
-    or(.A,.B),        or(.A,.C),       or(.A,.D),        or(.A,.E),       or(.A,.H),       or(.A,.L),       or_B6(.A,.HL),   or(.A,.A),       cp(.A,.B),       cp(.A,.C),        cp(.A,.D),        cp(.A,.E),    cp(.A,.H),  cp(.A,.L),  cp_BE(.A,.HL),   cp(.A,.A),  // 0xB0
-    todo,             pop_reg(.BC),    jp_if(.Z, false), jp_C3,           todo,            push_reg(.BC),   add_C6(.A),      todo,            todo,            todo,             jp_if(.Z, true),  todo,         todo,       call_cd,    adc_CE(.A),      todo,       // 0xC0
-    todo,             pop_reg(.DE),    jp_if(.C, false), todo,            todo,            push_reg(.DE),   sub_D6(.A),      todo,            todo,            todo,             jp_if(.C, true),  todo,         todo,       todo,       sbc_DE(.A),      todo,       // 0xD0
-    ld_ffu8_l,        pop_reg(.HL),    ld_ffc_l,         todo,            todo,            push_reg(.HL),   and_E6(.A),      todo,            add_E8,          jp_E9,            ld_fl(.A),        todo,         todo,       todo,       and_E6(.A),      todo,       // 0xE0
-    ld_ffu8_r,        pop_reg(.AF),    ld_ffc_r,         todo,            todo,            push_reg(.AF),   or_F6(.A),       todo,            ld_F8,           ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,       todo,       or_F6(.A),       todo,       // 0xF0
+//  0x00,              0x01,            0x02,             0x03,            0x04,               0x05,            0x06,            0x07,            0x08,             0x09,             0x0A,             0x0B,         0x0C,               0x0D,       0x0E,            0x0F
+    nop_00,            ld_fv_u16(.BC),  ld_ml(.BC,.A, 0), inc_u16(.BC),    inc(.B),            dec(.B),         ld_fv_u8(.B),    todo,            ld_fl_u16(.SP),   add_u16(.HL,.BC), ld_mr(.A,.BC, 0), dec_u16(.BC), inc(.C),            dec(.C),    ld_fv_u8(.C),    todo,       // 0x00
+    todo,              ld_fv_u16(.DE),  ld_ml(.DE,.A, 0), inc_u16(.DE),    inc(.D),            dec(.D),         ld_fv_u8(.D),    todo,            jr_18,            add_u16(.HL,.DE), ld_mr(.A,.DE, 0), dec_u16(.DE), inc(.E),            dec(.E),    ld_fv_u8(.E),    todo,       // 0x10
+    jr_if(.Z, false),  ld_fv_u16(.HL),  ld_ml(.HL,.A, 1), inc_u16(.HL),    inc(.H),            dec(.H),         ld_fv_u8(.H),    todo,            jr_if(.Z, true),  add_u16(.HL,.HL), ld_mr(.A,.HL, 1), dec_u16(.HL), inc(.L),            dec(.L),    ld_fv_u8(.L),    todo,       // 0x20
+    jr_if(.C, false),  ld_fv_u16(.SP),  ld_ml(.HL,.A,-1), inc_u16(.SP),    inc_34,             dec_35,          ld_fmem(.HL),    todo,            jr_if(.C, true),  add_u16(.HL,.SP), ld_mr(.A,.HL,-1), dec_u16(.SP), inc(.A),            dec(.A),    ld_fv_u8(.A),    todo,       // 0x30
+    ld(.B,.B),         ld(.B,.C),       ld(.B,.D),        ld(.B,.E),       ld(.B,.H),          ld(.B,.L),       ld_mr(.B,.HL,0), ld(.B,.A),       ld(.C,.B),        ld(.C,.C),        ld(.C,.D),        ld(.C,.E),    ld(.C,.H),          ld(.C,.L),  ld_mr(.C,.HL,0), ld(.C,.A),  // 0x40
+    ld(.D,.B),         ld(.D,.C),       ld(.D,.D),        ld(.D,.E),       ld(.D,.H),          ld(.D,.L),       ld_mr(.D,.HL,0), ld(.D,.A),       ld(.E,.B),        ld(.E,.C),        ld(.E,.D),        ld(.E,.E),    ld(.E,.H),          ld(.E,.L),  ld_mr(.E,.HL,0), ld(.E,.A),  // 0x50
+    ld(.H,.B),         ld(.H,.C),       ld(.H,.D),        ld(.H,.E),       ld(.H,.H),          ld(.H,.L),       ld_mr(.H,.HL,0), ld(.H,.A),       ld(.L,.B),        ld(.L,.C),        ld(.L,.D),        ld(.L,.E),    ld(.L,.H),          ld(.L,.L),  ld_mr(.L,.HL,0), ld(.L,.A),  // 0x60
+    ld_ml(.HL,.B,0),   ld_ml(.HL,.C,0), ld_ml(.HL,.D,0),  ld_ml(.HL,.E,0), ld_ml(.HL,.H,0),    ld_ml(.HL,.L,0), todo,            ld_ml(.HL,.A,0), ld(.A,.B),        ld(.A,.C),        ld(.A,.D),        ld(.A,.E),    ld(.A,.H),          ld(.A,.L),  ld_mr(.A,.HL,0), ld(.A,.A),  // 0x70
+    add(.A,.B),        add(.A,.C),      add(.A,.D),       add(.A,.E),      add(.A,.H),         add(.A,.L),      add_86(.A,.HL),  add(.A,.A),      adc(.A,.B),       adc(.A,.C),       adc(.A,.D),       adc(.A,.E),   adc(.A,.H),         adc(.A,.L), adc_8E(.A,.HL),  adc(.A,.A), // 0x80
+    sub(.A,.B),        sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),         sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      sbc(.A,.B),       sbc(.A,.C),       sbc(.A,.D),       sbc(.A,.E),   sbc(.A,.H),         sbc(.A,.L), sbc_9E(.A,.HL),  sbc(.A,.A), // 0x90
+    and(.A,.B),        and(.A,.C),      and(.A,.D),       and(.A,.E),      and(.A,.H),         and(.A,.L),      and_A6(.A,.HL),  and(.A,.A),      xor(.A,.B),       xor(.A,.C),       xor(.A,.D),       xor(.A,.E),   xor(.A,.H),         xor(.A,.L), xor_AE(.A,.HL),  xor(.A,.A), // 0xA0
+    or(.A,.B),         or(.A,.C),       or(.A,.D),        or(.A,.E),       or(.A,.H),          or(.A,.L),       or_B6(.A,.HL),   or(.A,.A),       cp(.A,.B),        cp(.A,.C),        cp(.A,.D),        cp(.A,.E),    cp(.A,.H),          cp(.A,.L),  cp_BE(.A,.HL),   cp(.A,.A),  // 0xB0
+    ret_if(.Z, false), pop_reg(.BC),    jp_if(.Z, false), jp_C3,           call_if(.Z, false), push_reg(.BC),   add_C6(.A),      todo,            ret_if(.Z, true), ret_c9,           jp_if(.Z, true),  todo,         call_if(.Z, false), call_cd,    adc_CE(.A),      todo,       // 0xC0
+    ret_if(.C, false), pop_reg(.DE),    jp_if(.C, false), todo,            call_if(.C, false), push_reg(.DE),   sub_D6(.A),      todo,            ret_if(.C, true), todo,             jp_if(.C, true),  todo,         call_if(.C, false), todo,       sbc_DE(.A),      todo,       // 0xD0
+    ld_ffu8_l,         pop_reg(.HL),    ld_ffc_l,         todo,            todo,               push_reg(.HL),   and_E6(.A),      todo,            add_E8,           jp_E9,            ld_fl(.A),        todo,         todo,               todo,       and_E6(.A),      todo,       // 0xE0
+    ld_ffu8_r,         pop_reg(.AF),    ld_ffc_r,         todo,            todo,               push_reg(.AF),   or_F6(.A),       todo,            ld_F8,            ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,               todo,       or_F6(.A),       todo,       // 0xF0
 }
 
 todo :: proc(^CPU) -> u8 {
@@ -703,6 +703,24 @@ call_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
             return 6
         } else {
             return 3
+        }
+    }
+}
+
+ret_c9 :: proc(cpu: ^CPU) -> u8 {
+    addr := pop(cpu)
+    cpu.pc = addr
+    return 4
+}
+
+ret_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        if get_flag(cpu, flag) == is {
+            addr := pop(cpu)
+            cpu.pc = addr
+            return 5
+        } else {
+            return 2
         }
     }
 }
