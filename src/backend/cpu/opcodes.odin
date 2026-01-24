@@ -1,5 +1,6 @@
 package cpu
 
+import "core:math/bits"
 import "src:helper/math"
 
 // https://izik1.github.io/gbops/
@@ -22,6 +23,26 @@ OPCODES: [256]proc(^CPU) -> u8 = {
     ret_if(.C, false), pop_reg(.DE),    jp_if(.C, false), todo,            call_if(.C, false), push_reg(.DE),   sub_D6(.A),      todo,            ret_if(.C, true), todo,             jp_if(.C, true),  todo,         call_if(.C, false), todo,       sbc_DE(.A),      todo,       // 0xD0
     ld_ffu8_l,         pop_reg(.HL),    ld_ffc_l,         todo,            todo,               push_reg(.HL),   and_E6(.A),      todo,            add_E8,           jp_E9,            ld_fl(.A),        todo,         todo,               todo,       and_E6(.A),      todo,       // 0xE0
     ld_ffu8_r,         pop_reg(.AF),    ld_ffc_r,         todo,            todo,               push_reg(.AF),   or_F6(.A),       todo,            ld_F8,            ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,               todo,       or_F6(.A),       todo,       // 0xF0
+}
+
+OPCODES_CB: [256]proc(^CPU) -> u8 = {
+//  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x00
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x10
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x20
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x30
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x40
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x50
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x60
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x70
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x80
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x90
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xA0
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xB0
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xC0
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xD0
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xE0
+    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xF0
 }
 
 todo :: proc(^CPU) -> u8 {
@@ -722,5 +743,26 @@ ret_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
         } else {
             return 2
         }
+    }
+}
+
+prefix_cb :: proc(cpu: ^CPU) -> u8 {
+    op := fetch(cpu)
+    return OPCODES_CB[op](cpu)
+}
+
+rl :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := get_reg(cpu, reg)
+        res, overflow := math.rotate_left(val)
+
+        if carry {
+            res |= get_flag(cpu, .C)
+        }
+        
+        cpu.f.z = res == 0
+        cpu.f.n = 0
+        cpu.f.h = 0
+        cpu.f.c = overflow
     }
 }

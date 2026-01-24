@@ -175,3 +175,99 @@ will_half_borrow_u16_test :: proc(t: ^testing.T) {
     testing.expect(t, will_half_borrow_u16(0b11110001_00000000, 0x0100) == false)
     testing.expect(t, will_half_borrow_u16(0b00011111_00000000, 0b00001111_00000000) == false)
 }
+
+rotate_left :: proc(val: u8) -> (res: u8, overflow: bool) {
+    overflow = val & 0b10000000 != 0
+    res = val << 1
+    if overflow {
+        res |= 0b00000001
+    }
+    return res, overflow
+}
+
+@(test)
+rotate_left_test :: proc(t: ^testing.T) {
+    got: u8
+    overflow: bool
+
+    got, overflow = rotate_left(0b11110000)
+    testing.expect_value(t, got, 0b11100001)
+    testing.expect_value(t, overflow, true)
+
+    got, overflow = rotate_left(0b11100001)
+    testing.expect_value(t, got, 0b11000011)
+    testing.expect_value(t, overflow, true)
+
+    got, overflow = rotate_left(0b10000111)
+    testing.expect_value(t, got, 0b00001111)
+    testing.expect_value(t, overflow, true)
+
+    got, overflow = rotate_left(0b00001111)
+    testing.expect_value(t, got, 0b00011110)
+    testing.expect_value(t, overflow, false)
+}
+
+rotate_right :: proc(val: u8) -> (res: u8, overflow: bool) {
+    overflow = val & 0b00000001 != 0
+    res = val >> 1
+    if overflow {
+        res |= 0b10000000
+    }
+    return res, overflow
+}
+
+@(test)
+rotate_right_test :: proc(t: ^testing.T) {
+    got: u8
+    overflow: bool
+
+    got, overflow = rotate_right(0b00001111)
+    testing.expect_value(t, got, 0b10000111)
+    testing.expect_value(t, overflow, true)
+
+    got, overflow = rotate_right(0b10000111)
+    testing.expect_value(t, got, 0b11000011)
+    testing.expect_value(t, overflow, true)
+
+    got, overflow = rotate_right(0b11110000)
+    testing.expect_value(t, got, 0b01111000)
+    testing.expect_value(t, overflow, false)
+}
+
+set_bit :: proc(val: u8, bit: uint, set: bool) -> u8 {
+    assert(bit <= 7)
+    val := val
+
+    if set == true {
+        val |= 1 << bit
+    } else {
+        val &= ~(1 << bit)
+    }
+
+    return val
+}
+
+@(test)
+set_bit_test :: proc(t: ^testing.T) {
+    testing.expect_value(t, set_bit(0b10101010, 0, true),  0b10101011)
+    testing.expect_value(t, set_bit(0b10101010, 0, false), 0b10101010)
+    testing.expect_value(t, set_bit(0b10101010, 1, true),  0b10101010)
+    testing.expect_value(t, set_bit(0b10101010, 1, false), 0b10101000)
+    testing.expect_value(t, set_bit(0b10101010, 7, true),  0b10101010)
+    testing.expect_value(t, set_bit(0b10101010, 7, false), 0b00101010)
+}
+
+get_bit :: proc(val: u8, bit: uint) -> bool {
+    assert(bit <= 7)
+
+    return bool((val & (1 << bit)) >> bit)
+}
+
+@(test)
+get_bit_test :: proc(t: ^testing.T) {
+    testing.expect_value(t, get_bit(0b10101010, 0), false)
+    testing.expect_value(t, get_bit(0b10101010, 1), true)
+    testing.expect_value(t, get_bit(0b10101010, 2), false)
+    testing.expect_value(t, get_bit(0b10101010, 3), true)
+    testing.expect_value(t, get_bit(0b10101010, 7), true)
+}
