@@ -1,5 +1,6 @@
 package cpu
 
+import "core:fmt"
 import "core:math/bits"
 import "src:helper/math"
 
@@ -27,8 +28,8 @@ OPCODES: [256]proc(^CPU) -> u8 = {
 
 OPCODES_CB: [256]proc(^CPU) -> u8 = {
 //  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x00
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x10
+    rl(.B,  true), rl(.C,  true), rl(.D,  true), rl(.E,  true), rl(.H,  true), rl(.L,  true), rl_hl( true), rl(.A,  true), rr(.B,  true), rr(.C,  true), rr(.D,  true), rr(.E,  true), rr(.H,  true), rr(.L,  true), rr_hl( true), rr(.A,  true), // 0x00
+    rl(.B, false), rl(.C, false), rl(.D, false), rl(.E, false), rl(.H, false), rl(.L, false), rl_hl(false), rl(.A, false), rr(.B, false), rr(.C, false), rr(.D, false), rr(.E, false), rr(.H, false), rr(.L, false), rr_hl(false), rr(.A, false), // 0x10
     todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x20
     todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x30
     todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x40
@@ -754,15 +755,65 @@ prefix_cb :: proc(cpu: ^CPU) -> u8 {
 rl :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
-        res, overflow := math.rotate_left(val)
-
-        if carry {
-            res |= get_flag(cpu, .C)
-        }
-        
-        cpu.f.z = res == 0
-        cpu.f.n = 0
-        cpu.f.h = 0
-        cpu.f.c = overflow
+        val = rl_helper(cpu, val, carry)
+        set_reg(cpu, reg, val)
+        return 2
     }
+}
+
+rl_hl :: proc($carry: bool) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := read_mem(cpu, get_reg_u16(cpu, .HL))
+        val = rl_helper(cpu, val, carry)
+        write_mem(cpu, get_reg_u16(cpu, .HL), val)
+        return 4
+    }
+}
+
+rl_helper :: proc(cpu: ^CPU, val: u8, carry: bool) -> u8 {
+    res, overflow := math.rotate_left(val)
+
+    if carry {
+        res = math.set_bit(res, 0, cpu.f.c)
+    }
+    
+    cpu.f.z = res == 0
+    cpu.f.n = false
+    cpu.f.h = false
+    cpu.f.c = overflow
+
+    return res
+}
+
+rr :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := get_reg(cpu, reg)
+        val = rr_helper(cpu, val, carry)
+        set_reg(cpu, reg, val)
+        return 2
+    }
+}
+
+rr_hl :: proc($carry: bool) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := read_mem(cpu, get_reg_u16(cpu, .HL))
+        val = rr_helper(cpu, val, carry)
+        write_mem(cpu, get_reg_u16(cpu, .HL), val)
+        return 4
+    }
+}
+
+rr_helper :: proc(cpu: ^CPU, val: u8, carry: bool) -> u8 {
+    res, overflow := math.rotate_right(val)
+
+    if carry {
+        res = math.set_bit(res, 7, cpu.f.c)
+    }
+    
+    cpu.f.z = res == 0
+    cpu.f.n = false
+    cpu.f.h = false
+    cpu.f.c = overflow
+
+    return res
 }
