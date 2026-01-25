@@ -271,3 +271,30 @@ get_bit_test :: proc(t: ^testing.T) {
     testing.expect_value(t, get_bit(0b10101010, 3), true)
     testing.expect_value(t, get_bit(0b10101010, 7), true)
 }
+
+shift_left :: proc(val: u8) -> u8 {
+    return val << 1
+}
+
+shift_right :: proc(val: u8, arith := false) -> (res: u8) {
+    if !arith {
+        return val >> 1
+    }
+
+    sign := u8(get_bit(val, 7))
+    res = set_bit(val, 7, false) // remove sign
+    res >>= 1 // shift
+    res |= sign << 7
+
+    return res
+}
+
+@(test)
+shift_right_test :: proc(t: ^testing.T) {
+    testing.expect_value(t, shift_right(0b11110000, false), 0b01111000)
+    testing.expect_value(t, shift_right(0b00001111, false), 0b00000111)
+
+    testing.expect_value(t, shift_right(0b11110000, true), 0b10111000)
+    testing.expect_value(t, shift_right(0b00001111, true), 0b00000111)
+    testing.expect_value(t, shift_right(0b10001111, true), 0b10000111)
+}

@@ -1,7 +1,6 @@
 package range
 
 import "core:fmt"
-import "../src/backend/cpu"
 
 main :: proc() {
     // f: cpu.Flag_Reg
@@ -18,8 +17,8 @@ main :: proc() {
     //     fmt.println(r)
     // }
 
-    arr: [3]u8 = {0, 1, 2}
-    sl := arr[3:3]
+    b := false
+    sl := u8(b)
 
-    fmt.println(sl)
+    fmt.printf("%8b\n", sl)
 }

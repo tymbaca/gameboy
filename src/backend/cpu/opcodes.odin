@@ -817,3 +817,32 @@ rr_helper :: proc(cpu: ^CPU, val: u8, carry: bool) -> u8 {
 
     return res
 }
+
+sl_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
+    carry := math.get_bit(val, 0)
+    val := val << 1
+
+    cpu.f.z = val == 0
+    cpu.f.n = false
+    cpu.f.h = false
+    cpu.f.c = carry
+
+    return val
+}
+
+sr_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
+    sign_bit := math.get_bit(val, 7)
+    carry := math.get_bit(val, 0)
+    val := val >> 1
+    
+    if arith {
+        val = math.set_bit(val, 7, sign_bit)
+    }
+
+    cpu.f.z = val == 0
+    cpu.f.n = false
+    cpu.f.h = false
+    cpu.f.c = carry
+
+    return val
+}
