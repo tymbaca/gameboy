@@ -30,8 +30,8 @@ OPCODES_CB: [256]proc(^CPU) -> u8 = {
 //  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
     rl(.B,  true), rl(.C,  true), rl(.D,  true), rl(.E,  true), rl(.H,  true), rl(.L,  true), rl_hl( true), rl(.A,  true), rr(.B,  true), rr(.C,  true), rr(.D,  true), rr(.E,  true), rr(.H,  true), rr(.L,  true), rr_hl( true), rr(.A,  true), // 0x00
     rl(.B, false), rl(.C, false), rl(.D, false), rl(.E, false), rl(.H, false), rl(.L, false), rl_hl(false), rl(.A, false), rr(.B, false), rr(.C, false), rr(.D, false), rr(.E, false), rr(.H, false), rr(.L, false), rr_hl(false), rr(.A, false), // 0x10
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x20
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x30
+    sl(.B),        sl(.C),        sl(.D),        sl(.E),        sl(.H),        sl(.L),        sl_hl,        sl(.A),        sr(.B, false), sr(.C, false), sr(.D, false), sr(.E, false), sr(.H, false), sr(.L, false), sr_hl(false), sr(.A, false), // 0x20
+    swap(.B),      swap(.C),      swap(.D),      swap(.E),      swap(.H),      swap(.L),      swap_hl,      swap(.A),      sr(.B,  true), sr(.C,  true), sr(.D,  true), sr(.E,  true), sr(.H,  true), sr(.L,  true), sr_hl( true), sr(.A,  true), // 0x30
     todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x40
     todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x50
     todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x60
@@ -818,9 +818,22 @@ rr_helper :: proc(cpu: ^CPU, val: u8, carry: bool) -> u8 {
     return res
 }
 
-sl :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
+sl :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := sl_helper(cpu, get_reg(cpu, reg))
+        set_reg(cpu, reg, val)
+        return 2
+    }
+}
 
-sl_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
+sl_hl :: proc(cpu: ^CPU) -> u8 {
+    val := read_mem(cpu, get_reg_u16(cpu, .HL))
+    val = sl_helper(cpu, val)
+    write_mem(cpu, get_reg_u16(cpu, .HL), val)
+    return 4
+}
+
+sl_helper :: proc(cpu: ^CPU, val: u8) -> u8 {
     carry := math.get_bit(val, 7)
     val := val << 1
 
@@ -864,4 +877,30 @@ sr_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
     cpu.f.c = carry
 
     return val
+}
+
+swap :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := swap_helper(cpu, get_reg(cpu, reg))
+        set_reg(cpu, reg, val)
+        return 2
+    }
+}
+
+swap_hl :: proc(cpu: ^CPU) -> u8 {
+    val := read_mem(cpu, get_reg_u16(cpu, .HL))
+    val = swap_helper(cpu, val)
+    write_mem(cpu, get_reg_u16(cpu, .HL), val)
+    return 4
+}
+
+swap_helper :: proc(cpu: ^CPU, val: u8) -> u8 {
+    high := val & 0xF0
+    low := val & 0x0F
+
+    res := low << 4
+    res |= high >> 4
+
+    cpu.f.z = res == 0
+    return res
 }
