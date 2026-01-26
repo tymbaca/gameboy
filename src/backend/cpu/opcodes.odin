@@ -818,8 +818,10 @@ rr_helper :: proc(cpu: ^CPU, val: u8, carry: bool) -> u8 {
     return res
 }
 
+sl :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
+
 sl_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
-    carry := math.get_bit(val, 0)
+    carry := math.get_bit(val, 7)
     val := val << 1
 
     cpu.f.z = val == 0
@@ -828,6 +830,23 @@ sl_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
     cpu.f.c = carry
 
     return val
+}
+
+sr :: proc($reg: Reg, $arith: bool) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := sr_helper(cpu, get_reg(cpu, reg), arith)
+        set_reg(cpu, reg, val)
+        return 2
+    }
+}
+
+sr_hl :: proc($arith: bool) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := read_mem(cpu, get_reg_u16(cpu, .HL))
+        val = sr_helper(cpu, val, arith)
+        write_mem(cpu, get_reg_u16(cpu, .HL), val)
+        return 4
+    }
 }
 
 sr_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
