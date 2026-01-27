@@ -17,8 +17,6 @@ main :: proc() {
     //     fmt.println(r)
     // }
 
-    b := false
-    sl := u8(b)
-
-    fmt.printf("%8b\n", sl)
+    v: i8 = 0
+    fmt.printf("%v\n", bool(v))
 }

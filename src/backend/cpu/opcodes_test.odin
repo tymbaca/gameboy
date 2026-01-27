@@ -634,3 +634,10 @@ call_ret_test :: proc(t: ^testing.T) {
     testing.expect_value(t, cpu.pc, 0x0003)
     testing.expect_value(t, cpu.sp, SP_START)
 }
+
+
+@(test)
+swap_test :: proc(t: ^testing.T) {
+    cpu := test_cpu()
+    testing.expect_value(t, swap_helper(&cpu, 0b11010010), 0b00101101)
+}

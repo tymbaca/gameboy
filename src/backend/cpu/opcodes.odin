@@ -20,30 +20,30 @@ OPCODES: [256]proc(^CPU) -> u8 = {
     sub(.A,.B),        sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),         sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      sbc(.A,.B),       sbc(.A,.C),       sbc(.A,.D),       sbc(.A,.E),   sbc(.A,.H),         sbc(.A,.L), sbc_9E(.A,.HL),  sbc(.A,.A), // 0x90
     and(.A,.B),        and(.A,.C),      and(.A,.D),       and(.A,.E),      and(.A,.H),         and(.A,.L),      and_A6(.A,.HL),  and(.A,.A),      xor(.A,.B),       xor(.A,.C),       xor(.A,.D),       xor(.A,.E),   xor(.A,.H),         xor(.A,.L), xor_AE(.A,.HL),  xor(.A,.A), // 0xA0
     or(.A,.B),         or(.A,.C),       or(.A,.D),        or(.A,.E),       or(.A,.H),          or(.A,.L),       or_B6(.A,.HL),   or(.A,.A),       cp(.A,.B),        cp(.A,.C),        cp(.A,.D),        cp(.A,.E),    cp(.A,.H),          cp(.A,.L),  cp_BE(.A,.HL),   cp(.A,.A),  // 0xB0
-    ret_if(.Z, false), pop_reg(.BC),    jp_if(.Z, false), jp_C3,           call_if(.Z, false), push_reg(.BC),   add_C6(.A),      todo,            ret_if(.Z, true), ret_c9,           jp_if(.Z, true),  todo,         call_if(.Z, false), call_cd,    adc_CE(.A),      todo,       // 0xC0
+    ret_if(.Z, false), pop_reg(.BC),    jp_if(.Z, false), jp_C3,           call_if(.Z, false), push_reg(.BC),   add_C6(.A),      todo,            ret_if(.Z, true), ret_c9,           jp_if(.Z, true),  prefix_cb,    call_if(.Z, false), call_cd,    adc_CE(.A),      todo,       // 0xC0
     ret_if(.C, false), pop_reg(.DE),    jp_if(.C, false), todo,            call_if(.C, false), push_reg(.DE),   sub_D6(.A),      todo,            ret_if(.C, true), todo,             jp_if(.C, true),  todo,         call_if(.C, false), todo,       sbc_DE(.A),      todo,       // 0xD0
     ld_ffu8_l,         pop_reg(.HL),    ld_ffc_l,         todo,            todo,               push_reg(.HL),   and_E6(.A),      todo,            add_E8,           jp_E9,            ld_fl(.A),        todo,         todo,               todo,       and_E6(.A),      todo,       // 0xE0
     ld_ffu8_r,         pop_reg(.AF),    ld_ffc_r,         todo,            todo,               push_reg(.AF),   or_F6(.A),       todo,            ld_F8,            ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,               todo,       or_F6(.A),       todo,       // 0xF0
 }
 
 OPCODES_CB: [256]proc(^CPU) -> u8 = {
-//  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
-    rl(.B,  true), rl(.C,  true), rl(.D,  true), rl(.E,  true), rl(.H,  true), rl(.L,  true), rl_hl( true), rl(.A,  true), rr(.B,  true), rr(.C,  true), rr(.D,  true), rr(.E,  true), rr(.H,  true), rr(.L,  true), rr_hl( true), rr(.A,  true), // 0x00
-    rl(.B, false), rl(.C, false), rl(.D, false), rl(.E, false), rl(.H, false), rl(.L, false), rl_hl(false), rl(.A, false), rr(.B, false), rr(.C, false), rr(.D, false), rr(.E, false), rr(.H, false), rr(.L, false), rr_hl(false), rr(.A, false), // 0x10
-    sl(.B),        sl(.C),        sl(.D),        sl(.E),        sl(.H),        sl(.L),        sl_hl,        sl(.A),        sr(.B, false), sr(.C, false), sr(.D, false), sr(.E, false), sr(.H, false), sr(.L, false), sr_hl(false), sr(.A, false), // 0x20
-    swap(.B),      swap(.C),      swap(.D),      swap(.E),      swap(.H),      swap(.L),      swap_hl,      swap(.A),      sr(.B,  true), sr(.C,  true), sr(.D,  true), sr(.E,  true), sr(.H,  true), sr(.L,  true), sr_hl( true), sr(.A,  true), // 0x30
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x40
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x50
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x60
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x70
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x80
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0x90
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xA0
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xB0
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xC0
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xD0
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xE0
-    todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, todo, // 0xF0
+//  0x00,              0x01,              0x02,              0x03,              0x04,              0x05,              0x06,             0x07,              0x08,              0x09,              0x0A,              0x0B,              0x0C,              0x0D,              0x0E,             0x0F
+    rl(.B,  true),     rl(.C,  true),     rl(.D,  true),     rl(.E,  true),     rl(.H,  true),     rl(.L,  true),     rl_hl( true),     rl(.A,  true),     rr(.B,  true),     rr(.C,  true),     rr(.D,  true),     rr(.E,  true),     rr(.H,  true),     rr(.L,  true),     rr_hl( true),     rr(.A,  true),     // 0x00
+    rl(.B, false),     rl(.C, false),     rl(.D, false),     rl(.E, false),     rl(.H, false),     rl(.L, false),     rl_hl(false),     rl(.A, false),     rr(.B, false),     rr(.C, false),     rr(.D, false),     rr(.E, false),     rr(.H, false),     rr(.L, false),     rr_hl(false),     rr(.A, false),     // 0x10
+    sl(.B),            sl(.C),            sl(.D),            sl(.E),            sl(.H),            sl(.L),            sl_hl,            sl(.A),            sr(.B, false),     sr(.C, false),     sr(.D, false),     sr(.E, false),     sr(.H, false),     sr(.L, false),     sr_hl(false),     sr(.A, false),     // 0x20
+    swap(.B),          swap(.C),          swap(.D),          swap(.E),          swap(.H),          swap(.L),          swap_hl,          swap(.A),          sr(.B,  true),     sr(.C,  true),     sr(.D,  true),     sr(.E,  true),     sr(.H,  true),     sr(.L,  true),     sr_hl( true),     sr(.A,  true),     // 0x30
+    bit(.B, 0),        bit(.C, 0),        bit(.D, 0),        bit(.E, 0),        bit(.H, 0),        bit(.L, 0),        bit_hl(0),        bit(.A, 0),        bit(.B, 1),        bit(.C, 1),        bit(.D, 1),        bit(.E, 1),        bit(.H, 1),        bit(.L, 1),        bit_hl(1),        bit(.A, 1),        // 0x40
+    bit(.B, 2),        bit(.C, 2),        bit(.D, 2),        bit(.E, 2),        bit(.H, 2),        bit(.L, 2),        bit_hl(2),        bit(.A, 2),        bit(.B, 3),        bit(.C, 3),        bit(.D, 3),        bit(.E, 3),        bit(.H, 3),        bit(.L, 3),        bit_hl(3),        bit(.A, 3),        // 0x50
+    bit(.B, 4),        bit(.C, 4),        bit(.D, 4),        bit(.E, 4),        bit(.H, 4),        bit(.L, 4),        bit_hl(4),        bit(.A, 4),        bit(.B, 5),        bit(.C, 5),        bit(.D, 5),        bit(.E, 5),        bit(.H, 5),        bit(.L, 5),        bit_hl(5),        bit(.A, 5),        // 0x60
+    bit(.B, 6),        bit(.C, 6),        bit(.D, 6),        bit(.E, 6),        bit(.H, 6),        bit(.L, 6),        bit_hl(6),        bit(.A, 6),        bit(.B, 7),        bit(.C, 7),        bit(.D, 7),        bit(.E, 7),        bit(.H, 7),        bit(.L, 7),        bit_hl(7),        bit(.A, 7),        // 0x70
+    set_bit(.B, 0, 0), set_bit(.C, 0, 0), set_bit(.D, 0, 0), set_bit(.E, 0, 0), set_bit(.H, 0, 0), set_bit(.L, 0, 0), set_bit_hl(0, 0), set_bit(.A, 0, 0), set_bit(.B, 1, 0), set_bit(.C, 1, 0), set_bit(.D, 1, 0), set_bit(.E, 1, 0), set_bit(.H, 1, 0), set_bit(.L, 1, 0), set_bit_hl(1, 0), set_bit(.A, 1, 0), // 0x80
+    set_bit(.B, 2, 0), set_bit(.C, 2, 0), set_bit(.D, 2, 0), set_bit(.E, 2, 0), set_bit(.H, 2, 0), set_bit(.L, 2, 0), set_bit_hl(2, 0), set_bit(.A, 2, 0), set_bit(.B, 3, 0), set_bit(.C, 3, 0), set_bit(.D, 3, 0), set_bit(.E, 3, 0), set_bit(.H, 3, 0), set_bit(.L, 3, 0), set_bit_hl(3, 0), set_bit(.A, 3, 0), // 0x90
+    set_bit(.B, 4, 0), set_bit(.C, 4, 0), set_bit(.D, 4, 0), set_bit(.E, 4, 0), set_bit(.H, 4, 0), set_bit(.L, 4, 0), set_bit_hl(4, 0), set_bit(.A, 4, 0), set_bit(.B, 5, 0), set_bit(.C, 5, 0), set_bit(.D, 5, 0), set_bit(.E, 5, 0), set_bit(.H, 5, 0), set_bit(.L, 5, 0), set_bit_hl(5, 0), set_bit(.A, 5, 0), // 0xA0
+    set_bit(.B, 6, 0), set_bit(.C, 6, 0), set_bit(.D, 6, 0), set_bit(.E, 6, 0), set_bit(.H, 6, 0), set_bit(.L, 6, 0), set_bit_hl(6, 0), set_bit(.A, 6, 0), set_bit(.B, 7, 0), set_bit(.C, 7, 0), set_bit(.D, 7, 0), set_bit(.E, 7, 0), set_bit(.H, 7, 0), set_bit(.L, 7, 0), set_bit_hl(7, 0), set_bit(.A, 7, 0), // 0xB0
+    set_bit(.B, 0, 1), set_bit(.C, 0, 1), set_bit(.D, 0, 1), set_bit(.E, 0, 1), set_bit(.H, 0, 1), set_bit(.L, 0, 1), set_bit_hl(0, 1), set_bit(.A, 0, 1), set_bit(.B, 1, 1), set_bit(.C, 1, 1), set_bit(.D, 1, 1), set_bit(.E, 1, 1), set_bit(.H, 1, 1), set_bit(.L, 1, 1), set_bit_hl(1, 1), set_bit(.A, 1, 1), // 0xC0
+    set_bit(.B, 2, 1), set_bit(.C, 2, 1), set_bit(.D, 2, 1), set_bit(.E, 2, 1), set_bit(.H, 2, 1), set_bit(.L, 2, 1), set_bit_hl(2, 1), set_bit(.A, 2, 1), set_bit(.B, 3, 1), set_bit(.C, 3, 1), set_bit(.D, 3, 1), set_bit(.E, 3, 1), set_bit(.H, 3, 1), set_bit(.L, 3, 1), set_bit_hl(3, 1), set_bit(.A, 3, 1), // 0xD0
+    set_bit(.B, 4, 1), set_bit(.C, 4, 1), set_bit(.D, 4, 1), set_bit(.E, 4, 1), set_bit(.H, 4, 1), set_bit(.L, 4, 1), set_bit_hl(4, 1), set_bit(.A, 4, 1), set_bit(.B, 5, 1), set_bit(.C, 5, 1), set_bit(.D, 5, 1), set_bit(.E, 5, 1), set_bit(.H, 5, 1), set_bit(.L, 5, 1), set_bit_hl(5, 1), set_bit(.A, 5, 1), // 0xE0
+    set_bit(.B, 6, 1), set_bit(.C, 6, 1), set_bit(.D, 6, 1), set_bit(.E, 6, 1), set_bit(.H, 6, 1), set_bit(.L, 6, 1), set_bit_hl(6, 1), set_bit(.A, 6, 1), set_bit(.B, 7, 1), set_bit(.C, 7, 1), set_bit(.D, 7, 1), set_bit(.E, 7, 1), set_bit(.H, 7, 1), set_bit(.L, 7, 1), set_bit_hl(7, 1), set_bit(.A, 7, 1), // 0xF0
 }
 
 todo :: proc(^CPU) -> u8 {
@@ -902,5 +902,55 @@ swap_helper :: proc(cpu: ^CPU, val: u8) -> u8 {
     res |= high >> 4
 
     cpu.f.z = res == 0
+    cpu.f.n = false
+    cpu.f.h = false
+    cpu.f.c = false
     return res
+}
+
+bit :: proc($reg: Reg, $bit: uint) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := get_reg(cpu, reg)
+        bit_helper(cpu, val, bit)
+
+        return 2
+    }
+}
+
+bit_hl :: proc($bit: uint) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := read_mem(cpu, get_reg_u16(cpu, .HL))
+        bit_helper(cpu, val, bit)
+
+        return 3
+    }
+}
+
+bit_helper :: proc(cpu: ^CPU, val: u8, bit: uint) {
+    bit_val := u8(math.get_bit(val, bit))
+    cpu.f.z = bit_val == 0
+    cpu.f.n = false
+    cpu.f.h = true
+
+    return
+}
+
+set_bit :: proc($reg: Reg, $bit: uint, $set: uint) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := get_reg(cpu, reg)
+        val = math.set_bit(val, bit, set != 0)
+        set_reg(cpu, reg, val)
+
+        return 2
+    }
+}
+
+set_bit_hl :: proc($bit: uint, $set: uint) -> proc(cpu: ^CPU) -> u8 {
+    return proc(cpu: ^CPU) -> u8 {
+        val := read_mem(cpu, get_reg_u16(cpu, .HL))
+        val = math.set_bit(val, bit, set != 0)
+        write_mem(cpu, get_reg_u16(cpu, .HL), val)
+
+        return 4
+    }
 }
