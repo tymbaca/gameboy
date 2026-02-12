@@ -635,6 +635,44 @@ call_ret_test :: proc(t: ^testing.T) {
     testing.expect_value(t, cpu.sp, SP_START)
 }
 
+@(test)
+rst_test :: proc(t: ^testing.T) {
+    cpu := test_cpu()
+
+    cpu.pc = 0x6666
+    write_mem(&cpu, 0x6666, 0xC7) // RST 0
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0000)
+
+    write_mem(&cpu, 0x0000, 0xCF) // RST 1
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0008)
+
+    write_mem(&cpu, 0x0008, 0xD7) // RST 2
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0010)
+
+    write_mem(&cpu, 0x0010, 0xDF) // RST 3
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0018)
+
+    write_mem(&cpu, 0x0018, 0xE7) // RST 4
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0020)
+
+    write_mem(&cpu, 0x0020, 0xEF) // RST 5
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0028)
+
+    write_mem(&cpu, 0x0028, 0xF7) // RST 6
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0030)
+
+    write_mem(&cpu, 0x0030, 0xFF) // RST 7
+    execute(&cpu)
+    testing.expect_value(t, cpu.pc, 0x0038)
+}
+
 
 @(test)
 swap_test :: proc(t: ^testing.T) {

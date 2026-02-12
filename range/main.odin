@@ -17,6 +17,6 @@ main :: proc() {
     //     fmt.println(r)
     // }
 
-    v: i8 = 0
-    fmt.printf("%v\n", bool(v))
+    v: u8 = 0b00110011
+    fmt.printf("%8b\n", ~v)
 }
