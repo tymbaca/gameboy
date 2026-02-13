@@ -730,16 +730,14 @@ call_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
 }
 
 ret_c9 :: proc(cpu: ^CPU) -> u8 {
-    addr := pop(cpu)
-    cpu.pc = addr
+    cpu.pc = pop(cpu)
     return 4
 }
 
 ret_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         if get_flag(cpu, flag) == is {
-            addr := pop(cpu)
-            cpu.pc = addr
+            cpu.pc = pop(cpu)
             return 5
         } else {
             return 2
@@ -754,6 +752,32 @@ rst :: proc($step: int) -> proc(^CPU) -> u8 {
         cpu.pc = u16(addr)
         return 4
     }
+}
+
+reti_d9 :: proc(cpu: ^CPU) -> u8 {
+    cpu.pc = pop(cpu)
+    cpu.irq_enabled = true
+    return 4
+}
+
+di_f3 :: proc(cpu: ^CPU) -> u8 {
+    cpu.irq_enabled = false
+    return 4
+}
+
+ei_fb :: proc(cpu: ^CPU) -> u8 {
+    cpu.irq_enabled = true
+    return 4
+}
+
+stop_10 :: proc(cpu: ^CPU) -> u8 {
+    // not implemented
+    return 1
+}
+
+halt_76 :: proc(cpu: ^CPU) -> u8 {
+    cpu.halted = true
+    return 1
 }
 
 prefix_cb :: proc(cpu: ^CPU) -> u8 {

@@ -11,6 +11,8 @@ CPU :: struct {
     b, c: u8, 
     d, e: u8,
     h, l: u8,
+    irq_enabled: bool,
+    halted: bool,
     bus: bus.Bus,
 }
 
