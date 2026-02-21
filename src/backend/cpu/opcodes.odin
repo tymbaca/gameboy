@@ -9,21 +9,21 @@ import "src:helper/math"
 OPCODES: [256]proc(^CPU) -> u8 = {
 //  0x00,              0x01,            0x02,             0x03,            0x04,               0x05,            0x06,            0x07,            0x08,             0x09,             0x0A,             0x0B,         0x0C,               0x0D,       0x0E,            0x0F
     nop_00,            ld_fv_u16(.BC),  ld_ml(.BC,.A, 0), inc_u16(.BC),    inc(.B),            dec(.B),         ld_fv_u8(.B),    rlca_07,         ld_fl_u16(.SP),   add_u16(.HL,.BC), ld_mr(.A,.BC, 0), dec_u16(.BC), inc(.C),            dec(.C),    ld_fv_u8(.C),    rrca_0F,    // 0x00
-    todo,              ld_fv_u16(.DE),  ld_ml(.DE,.A, 0), inc_u16(.DE),    inc(.D),            dec(.D),         ld_fv_u8(.D),    rla_17,          jr_18,            add_u16(.HL,.DE), ld_mr(.A,.DE, 0), dec_u16(.DE), inc(.E),            dec(.E),    ld_fv_u8(.E),    rra_1F,     // 0x10
-    jr_if(.Z, false),  ld_fv_u16(.HL),  ld_ml(.HL,.A, 1), inc_u16(.HL),    inc(.H),            dec(.H),         ld_fv_u8(.H),    todo,            jr_if(.Z, true),  add_u16(.HL,.HL), ld_mr(.A,.HL, 1), dec_u16(.HL), inc(.L),            dec(.L),    ld_fv_u8(.L),    cpl_2F,     // 0x20
+    stop_10,           ld_fv_u16(.DE),  ld_ml(.DE,.A, 0), inc_u16(.DE),    inc(.D),            dec(.D),         ld_fv_u8(.D),    rla_17,          jr_18,            add_u16(.HL,.DE), ld_mr(.A,.DE, 0), dec_u16(.DE), inc(.E),            dec(.E),    ld_fv_u8(.E),    rra_1F,     // 0x10
+    jr_if(.Z, false),  ld_fv_u16(.HL),  ld_ml(.HL,.A, 1), inc_u16(.HL),    inc(.H),            dec(.H),         ld_fv_u8(.H),    dai_27,          jr_if(.Z, true),  add_u16(.HL,.HL), ld_mr(.A,.HL, 1), dec_u16(.HL), inc(.L),            dec(.L),    ld_fv_u8(.L),    cpl_2F,     // 0x20
     jr_if(.C, false),  ld_fv_u16(.SP),  ld_ml(.HL,.A,-1), inc_u16(.SP),    inc_34,             dec_35,          ld_fmem(.HL),    scf_37,          jr_if(.C, true),  add_u16(.HL,.SP), ld_mr(.A,.HL,-1), dec_u16(.SP), inc(.A),            dec(.A),    ld_fv_u8(.A),    ccf_3F,     // 0x30
     ld(.B,.B),         ld(.B,.C),       ld(.B,.D),        ld(.B,.E),       ld(.B,.H),          ld(.B,.L),       ld_mr(.B,.HL,0), ld(.B,.A),       ld(.C,.B),        ld(.C,.C),        ld(.C,.D),        ld(.C,.E),    ld(.C,.H),          ld(.C,.L),  ld_mr(.C,.HL,0), ld(.C,.A),  // 0x40
     ld(.D,.B),         ld(.D,.C),       ld(.D,.D),        ld(.D,.E),       ld(.D,.H),          ld(.D,.L),       ld_mr(.D,.HL,0), ld(.D,.A),       ld(.E,.B),        ld(.E,.C),        ld(.E,.D),        ld(.E,.E),    ld(.E,.H),          ld(.E,.L),  ld_mr(.E,.HL,0), ld(.E,.A),  // 0x50
     ld(.H,.B),         ld(.H,.C),       ld(.H,.D),        ld(.H,.E),       ld(.H,.H),          ld(.H,.L),       ld_mr(.H,.HL,0), ld(.H,.A),       ld(.L,.B),        ld(.L,.C),        ld(.L,.D),        ld(.L,.E),    ld(.L,.H),          ld(.L,.L),  ld_mr(.L,.HL,0), ld(.L,.A),  // 0x60
-    ld_ml(.HL,.B,0),   ld_ml(.HL,.C,0), ld_ml(.HL,.D,0),  ld_ml(.HL,.E,0), ld_ml(.HL,.H,0),    ld_ml(.HL,.L,0), todo,            ld_ml(.HL,.A,0), ld(.A,.B),        ld(.A,.C),        ld(.A,.D),        ld(.A,.E),    ld(.A,.H),          ld(.A,.L),  ld_mr(.A,.HL,0), ld(.A,.A),  // 0x70
+    ld_ml(.HL,.B,0),   ld_ml(.HL,.C,0), ld_ml(.HL,.D,0),  ld_ml(.HL,.E,0), ld_ml(.HL,.H,0),    ld_ml(.HL,.L,0), halt_76,         ld_ml(.HL,.A,0), ld(.A,.B),        ld(.A,.C),        ld(.A,.D),        ld(.A,.E),    ld(.A,.H),          ld(.A,.L),  ld_mr(.A,.HL,0), ld(.A,.A),  // 0x70
     add(.A,.B),        add(.A,.C),      add(.A,.D),       add(.A,.E),      add(.A,.H),         add(.A,.L),      add_86(.A,.HL),  add(.A,.A),      adc(.A,.B),       adc(.A,.C),       adc(.A,.D),       adc(.A,.E),   adc(.A,.H),         adc(.A,.L), adc_8E(.A,.HL),  adc(.A,.A), // 0x80
     sub(.A,.B),        sub(.A,.C),      sub(.A,.D),       sub(.A,.E),      sub(.A,.H),         sub(.A,.L),      sub_96(.A,.HL),  sub(.A,.A),      sbc(.A,.B),       sbc(.A,.C),       sbc(.A,.D),       sbc(.A,.E),   sbc(.A,.H),         sbc(.A,.L), sbc_9E(.A,.HL),  sbc(.A,.A), // 0x90
     and(.A,.B),        and(.A,.C),      and(.A,.D),       and(.A,.E),      and(.A,.H),         and(.A,.L),      and_A6(.A,.HL),  and(.A,.A),      xor(.A,.B),       xor(.A,.C),       xor(.A,.D),       xor(.A,.E),   xor(.A,.H),         xor(.A,.L), xor_AE(.A,.HL),  xor(.A,.A), // 0xA0
     or(.A,.B),         or(.A,.C),       or(.A,.D),        or(.A,.E),       or(.A,.H),          or(.A,.L),       or_B6(.A,.HL),   or(.A,.A),       cp(.A,.B),        cp(.A,.C),        cp(.A,.D),        cp(.A,.E),    cp(.A,.H),          cp(.A,.L),  cp_BE(.A,.HL),   cp(.A,.A),  // 0xB0
     ret_if(.Z, false), pop_reg(.BC),    jp_if(.Z, false), jp_C3,           call_if(.Z, false), push_reg(.BC),   add_C6(.A),      rst(0),          ret_if(.Z, true), ret_c9,           jp_if(.Z, true),  prefix_cb,    call_if(.Z, false), call_cd,    adc_CE(.A),      rst(1),     // 0xC0
-    ret_if(.C, false), pop_reg(.DE),    jp_if(.C, false), todo,            call_if(.C, false), push_reg(.DE),   sub_D6(.A),      rst(2),          ret_if(.C, true), todo,             jp_if(.C, true),  todo,         call_if(.C, false), todo,       sbc_DE(.A),      rst(3),     // 0xD0
-    ld_ffu8_l,         pop_reg(.HL),    ld_ffc_l,         todo,            todo,               push_reg(.HL),   and_E6(.A),      rst(4),          add_E8,           jp_E9,            ld_fl(.A),        todo,         todo,               todo,       and_E6(.A),      rst(5),     // 0xE0
-    ld_ffu8_r,         pop_reg(.AF),    ld_ffc_r,         todo,            todo,               push_reg(.AF),   or_F6(.A),       rst(6),          ld_F8,            ld_u16(.SP,.HL),  ld_fr(.A),        todo,         todo,               todo,       or_F6(.A),       rst(7),     // 0xF0
+    ret_if(.C, false), pop_reg(.DE),    jp_if(.C, false), invalid,         call_if(.C, false), push_reg(.DE),   sub_D6(.A),      rst(2),          ret_if(.C, true), reti_d9,          jp_if(.C, true),  invalid,      call_if(.C, false), invalid,    sbc_DE(.A),      rst(3),     // 0xD0
+    ld_ffu8_l,         pop_reg(.HL),    ld_ffc_l,         invalid,         invalid,            push_reg(.HL),   and_E6(.A),      rst(4),          add_E8,           jp_E9,            ld_fl(.A),        invalid,      invalid,            invalid,    and_E6(.A),      rst(5),     // 0xE0
+    ld_ffu8_r,         pop_reg(.AF),    ld_ffc_r,         di_f3,           invalid,            push_reg(.AF),   or_F6(.A),       rst(6),          ld_F8,            ld_u16(.SP,.HL),  ld_fr(.A),        ei_fb,        invalid,            invalid,    or_F6(.A),       rst(7),     // 0xF0
 }
 
 OPCODES_CB: [256]proc(^CPU) -> u8 = {
@@ -48,6 +48,10 @@ OPCODES_CB: [256]proc(^CPU) -> u8 = {
 
 todo :: proc(^CPU) -> u8 {
     panic("not implemented")
+}
+
+invalid :: proc(^CPU) -> u8 {
+    panic("invalid opcode")
 }
 
 nop_00 :: proc(cpu: ^CPU) -> u8 {
@@ -1031,5 +1035,36 @@ cpl_2F :: proc(cpu: ^CPU) -> u8 {
     set_reg(cpu, .A, ~val)
     cpu.f.n = true
     cpu.f.h = true
+    return 1
+}
+
+dai_27 :: proc (cpu: ^CPU) -> u8 {
+    a := i32(get_reg(cpu, .A))
+
+    if cpu.f.n == true {
+        if cpu.f.h {
+            a = (a - 6) & 0xFF
+        }
+        if cpu.f.c {
+            a -= 0x60
+        }
+    } else {
+        if cpu.f.h || (a & 0x0F) > 0x09 {
+            a += 0x06
+        }
+        if cpu.f.c || a > 0x9F {
+            a +=  0x60
+        }
+    }
+
+    if (a & 0x100) == 0x100 {
+        cpu.f.c = true
+    }
+
+    a &= 0xFF
+    set_reg(cpu, .A, u8(a))
+    cpu.f.z = a == 0
+    cpu.f.h = false
+
     return 1
 }
