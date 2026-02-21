@@ -16,14 +16,6 @@ CPU :: struct {
     bus: bus.Bus,
 }
 
-SP_START :: 0xFFFE
-
-new_cpu :: proc() -> CPU {
-	return CPU{
-        sp = SP_START,
-    }
-}
-
 Reg :: enum {
     A, F, 
     B, C, 
@@ -53,6 +45,103 @@ Flag_Kind :: enum {
     N, // 7 Negative Flag
     H, // 6 Half-Carry Flag
     C, // 5 Carry Flag
+}
+
+
+new_cpu :: proc() -> CPU {
+    cpu := CPU{
+        pc = 0x0100,
+        sp = 0xFFFE,
+        a = 0x01,
+        b = 0x00,
+        c = 0x13,
+        d = 0x00,
+        e = 0xD8,
+        f = Flag_Reg(0xB0),
+        h = 0x01,
+        l = 0x4D,
+        irq_enabled = false,
+        halted = false,
+        bus = bus.new(),
+    }
+
+    // Magic values for RAM initialization
+    write_mem(&cpu, 0xFF10, 0x80)
+    write_mem(&cpu, 0xFF11, 0xBF)
+    write_mem(&cpu, 0xFF12, 0xF3)
+    write_mem(&cpu, 0xFF14, 0xBF)
+    write_mem(&cpu, 0xFF16, 0x3F)
+    write_mem(&cpu, 0xFF19, 0xBF)
+    write_mem(&cpu, 0xFF1A, 0x7F)
+    write_mem(&cpu, 0xFF1B, 0xFF)
+    write_mem(&cpu, 0xFF1C, 0x9F)
+    write_mem(&cpu, 0xFF1E, 0xBF)
+    write_mem(&cpu, 0xFF20, 0xFF)
+    write_mem(&cpu, 0xFF23, 0xBF)
+    write_mem(&cpu, 0xFF24, 0x77)
+    write_mem(&cpu, 0xFF25, 0xF3)
+    write_mem(&cpu, 0xFF26, 0xF1) // 0xF0 for SGB
+    write_mem(&cpu, 0xFF40, 0x91)
+    write_mem(&cpu, 0xFF47, 0xFC)
+    write_mem(&cpu, 0xFF48, 0xFF)
+    write_mem(&cpu, 0xFF49, 0xFF)
+
+    return cpu
+}
+
+
+tick :: proc(cpu: ^CPU) -> bool {
+    cycles := execute(cpu) if !cpu.halted else 1
+
+    return false
+}
+
+execute :: proc(cpu: ^CPU) -> u8 {
+    op := fetch(cpu)
+    return OPCODES[op](cpu)
+}
+
+fetch :: proc(cpu: ^CPU) -> u8 {
+    val := read_mem(cpu, cpu.pc)
+    cpu.pc += 1
+    return val
+}
+
+fetch_i8 :: proc(cpu: ^CPU) -> i8 {
+    return transmute(i8)(fetch(cpu))
+}
+
+fetch_u16 :: proc(cpu: ^CPU) -> u16 {
+    low := fetch(cpu)
+    high := fetch(cpu)
+
+    return math.merge_u16(high, low)
+}
+
+read_mem :: proc(cpu: ^CPU, addr: u16) -> u8 {
+    return bus.read(&cpu.bus, addr)
+}
+
+write_mem :: proc(cpu: ^CPU, addr: u16, val: u8) {
+    bus.write(&cpu.bus, addr, val)
+}
+
+pop :: proc(cpu: ^CPU) -> u16 {
+    assert(cpu.sp <= 0xFFFE, "you'r cooked bro")
+    assert(cpu.sp != 0xFFFE, "pop called when stack is empty")
+
+    low := read_mem(cpu, cpu.sp)
+    high := read_mem(cpu, cpu.sp+1)
+    cpu.sp += 2
+
+    return math.merge_u16(high, low)
+} 
+
+push :: proc(cpu: ^CPU, val: u16) {
+    cpu.sp -= 2
+    high, low := math.split_u16(val)
+    write_mem(cpu, cpu.sp, low)
+    write_mem(cpu, cpu.sp+1, high)
 }
 
 get_flag :: proc(cpu: ^CPU, flag: Flag_Kind) -> bool {
@@ -190,54 +279,6 @@ inc_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) {
 dec_reg_u16 :: proc(cpu: ^CPU, reg: Reg_u16) {
     val := get_reg_u16(cpu, reg)
     set_reg_u16(cpu, reg, val - 1)
-}
-
-execute :: proc(cpu: ^CPU) -> u8 {
-    op := fetch(cpu)
-    return OPCODES[op](cpu)
-}
-
-fetch :: proc(cpu: ^CPU) -> u8 {
-    val := read_mem(cpu, cpu.pc)
-    cpu.pc += 1
-    return val
-}
-
-fetch_i8 :: proc(cpu: ^CPU) -> i8 {
-    return transmute(i8)(fetch(cpu))
-}
-
-fetch_u16 :: proc(cpu: ^CPU) -> u16 {
-    low := fetch(cpu)
-    high := fetch(cpu)
-
-    return math.merge_u16(high, low)
-}
-
-read_mem :: proc(cpu: ^CPU, addr: u16) -> u8 {
-    return bus.read(&cpu.bus, addr)
-}
-
-write_mem :: proc(cpu: ^CPU, addr: u16, val: u8) {
-    bus.write(&cpu.bus, addr, val)
-}
-
-pop :: proc(cpu: ^CPU) -> u16 {
-    assert(cpu.sp <= 0xFFFE, "you'r cooked bro")
-    assert(cpu.sp != 0xFFFE, "pop called when stack is empty")
-
-    low := read_mem(cpu, cpu.sp)
-    high := read_mem(cpu, cpu.sp+1)
-    cpu.sp += 2
-
-    return math.merge_u16(high, low)
-} 
-
-push :: proc(cpu: ^CPU, val: u16) {
-    cpu.sp -= 2
-    high, low := math.split_u16(val)
-    write_mem(cpu, cpu.sp, low)
-    write_mem(cpu, cpu.sp+1, high)
 }
 
 add_u16_i8 :: proc(a: u16, b: i8) -> (res: u16, flags: Flag_Reg) {
