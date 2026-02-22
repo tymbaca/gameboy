@@ -1,5 +1,6 @@
 package frontend
 
+import "core:sys/wasm/js"
 import "base:runtime"
 import os "core:os/os2"
 import "core:strings"
@@ -20,7 +21,7 @@ TABLE_FLAGS :: im.TableFlags_Resizable | im.TableFlags_BordersOuter | im.TableFl
 Context :: struct {
     cpu: ^cpu_pkg.CPU,
 
-    load_rom_path: string,
+    load_rom_path: []u8,
     load_rom_error: string,
 
     byte_fmt: string,
@@ -33,6 +34,8 @@ Context :: struct {
 
 context_init :: proc(ctx: ^Context, cpu: ^cpu_pkg.CPU, allocator: runtime.Allocator) {
     ctx.cpu = cpu
+
+    ctx.load_rom_path = make([]u8, 1024, allocator)
 
     ctx.byte_fmt = "%2x"
     ctx.two_byte_fmt = "%4x"
@@ -112,20 +115,9 @@ render_cpu :: proc(ctx: ^Context, allocator: runtime.Allocator) {
         special_regs(ctx.cpu, ctx.two_byte_fmt, allocator)
 	}
 
-    size :: 1024
-    rom_path: [size]u8
-    rom_path_str: string
-    im.InputTextWithHint("rom_location", "path to ROM", cstring(raw_data(&rom_path)), size, flags = {.CallbackCompletion}, user_data = &rom_path_str, callback = proc "c" (data: ^im.InputTextCallbackData) -> c.int {
-        str_prt := (^string)(data.UserData)
-        ptr := transmute([^]u8)data.Buf
-        str_prt^ = string(ptr[:data.BufTextLen])
-        load_rom(ctx, strings.string_from_null_terminated_ptr(raw_data(&rom_path), size), allocator)
-
-        return data.BufTextLen
-    })
-
+    im.InputTextWithHint("rom_location", "path to ROM", cstring(raw_data(ctx.load_rom_path)), len(ctx.load_rom_path))
     if im.Button("load ROM") {
-        load_rom(ctx, strings.string_from_null_terminated_ptr(raw_data(&rom_path), size), allocator)
+        load_rom(ctx, strings.string_from_null_terminated_ptr(raw_data(ctx.load_rom_path), len(ctx.load_rom_path)), allocator)
     }
     if ctx.load_rom_error != "" {
         im.Text("failed to open ROM file: %s", ctx.load_rom_error)
