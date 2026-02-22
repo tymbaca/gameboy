@@ -2,8 +2,8 @@ package cart
 
 import "base:runtime"
 
-ROM_START :: 0x0000
-ROM_END :: 0x7FFF
+MEM_START :: 0x0000
+MEM_END :: 0x8000
 
 Cartridge :: struct {
 	rom: []u8,
@@ -13,7 +13,7 @@ new :: proc(rom: []u8) -> Cartridge {
 	return {rom}
 }
 
-read :: proc(cart: ^Cartridge, addr: u16) -> u8 {
+read :: proc(cart: Cartridge, addr: u16) -> u8 {
     return cart.rom[addr]
 }
 

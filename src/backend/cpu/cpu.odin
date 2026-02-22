@@ -20,10 +20,12 @@ CPU :: struct {
     allocator: runtime.Allocator,
 }
 
+SP_START :: 0xFFFE
+
 new_cpu :: proc() -> CPU {
     cpu := CPU{
         pc = 0x0100,
-        sp = 0xFFFE,
+        sp = SP_START,
         a = 0x01,
         b = 0x00,
         c = 0x13,
@@ -129,7 +131,7 @@ fetch_u16 :: proc(cpu: ^CPU) -> u16 {
 }
 
 read_mem :: proc(cpu: ^CPU, addr: u16) -> u8 {
-    return bus.read(&cpu.bus, addr)
+    return bus.read(cpu.bus, addr)
 }
 
 write_mem :: proc(cpu: ^CPU, addr: u16, val: u8) {
