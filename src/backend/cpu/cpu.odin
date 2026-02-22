@@ -1,8 +1,10 @@
 package cpu
 
+import "base:runtime"
 import "core:log"
 import "src:helper/math"
 import "src:backend/bus"
+import "src:backend/cart"
 
 CPU :: struct {
     pc, sp: u16,
@@ -14,39 +16,9 @@ CPU :: struct {
     irq_enabled: bool,
     halted: bool,
     bus: bus.Bus,
-}
 
-Reg :: enum {
-    A, F, 
-    B, C, 
-    D, E, 
-    H, L,
+    allocator: runtime.Allocator,
 }
-
-Reg_u16 :: enum {
-    PC, 
-    SP, 
-    AF, 
-    BC, 
-    DE, 
-    HL,
-}
-
-Flag_Reg :: bit_field u8 {
-    _: bool | 4, // 1-4 reserved, not used
-    c: bool | 1, // 5 Carry Flag
-    h: bool | 1, // 6 Half-Carry Flag
-    n: bool | 1, // 7 Negative Flag
-    z: bool | 1, // 8 Zero Flag
-}
-
-Flag_Kind :: enum {
-    Z, // 8 Zero Flag
-    N, // 7 Negative Flag
-    H, // 6 Half-Carry Flag
-    C, // 5 Carry Flag
-}
-
 
 new_cpu :: proc() -> CPU {
     cpu := CPU{
@@ -89,8 +61,42 @@ new_cpu :: proc() -> CPU {
     return cpu
 }
 
+Reg :: enum {
+    A, F, 
+    B, C, 
+    D, E, 
+    H, L,
+}
+
+Reg_u16 :: enum {
+    PC, 
+    SP, 
+    AF, 
+    BC, 
+    DE, 
+    HL,
+}
+
+Flag_Reg :: bit_field u8 {
+    _: bool | 4, // 1-4 reserved, not used
+    c: bool | 1, // 5 Carry Flag
+    h: bool | 1, // 6 Half-Carry Flag
+    n: bool | 1, // 7 Negative Flag
+    z: bool | 1, // 8 Zero Flag
+}
+
+Flag_Kind :: enum {
+    Z, // 8 Zero Flag
+    N, // 7 Negative Flag
+    H, // 6 Half-Carry Flag
+    C, // 5 Carry Flag
+}
+
 load_rom :: proc(cpu: ^CPU, rom: []u8) {
-    panic("not implemented")
+    rom_copy := make([]u8, len(rom), allocator = cpu.allocator)
+    copy(rom_copy, rom)
+
+    cart := cart.new(rom_copy)
 }
 
 
