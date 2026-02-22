@@ -13,25 +13,32 @@ Color :: enum u8 {
 	Black = 0b11,
 }
 
+/*
+0: 0x55:  0 1 0 1 0 1 0 1
+1: 0x33: 0 0 1 1 0 0 1 1
+
+         0001101100011011
+          0 1 2 3 0 1 2 3
+*/
 read_tile :: proc(t: Tile, offset: u16) -> u8 {
     if offset > 16 {
-        panic("Offset too large to fit in this tile")
+        panic("offset too large to fit in this tile")
     }
     row := offset / 2
     bit := offset % 2
-    ret := 0
+    ret: u8 = 0
     for i in 0..<8 {
         ret <<= 1
-        ret |= 1 if math.get_bit(u8(t.pixels[row][7-i]), uint(bit)) else 0
+        ret |= 1 if math.get_bit(u8(t.pixels[row][i]), uint(bit)) else 0
     }
 
-    return u8(ret)
+    return ret
 }
 
 write_tile :: proc(t: Tile, offset: u16, val: u8) -> Tile {
     t := t
     if offset > 16 {
-        panic("Offset too large to fit in this tile")
+        panic("offset too large to fit in this tile")
     }
 
     row := offset / 2
