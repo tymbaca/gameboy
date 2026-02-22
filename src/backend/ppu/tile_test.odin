@@ -1,6 +1,7 @@
 package ppu
 
 import "core:testing"
+
 @(test)
 tile_test :: proc(t: ^testing.T) {
 	tile := Tile {

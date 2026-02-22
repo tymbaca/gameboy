@@ -23,7 +23,6 @@ read_tile :: proc(t: Tile, offset: u16) -> u8 {
     for i in 0..<8 {
         ret <<= 1
         ret |= 1 if math.get_bit(u8(t.pixels[row][7-i]), uint(bit)) else 0
-    
     }
 
     return u8(ret)
