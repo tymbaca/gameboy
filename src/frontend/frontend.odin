@@ -1,5 +1,10 @@
 package frontend
 
+import "base:runtime"
+import os "core:os/os2"
+import "core:strings"
+import "core:sys/windows"
+import "core:sys/darwin"
 import "core:encoding/hex"
 import "base:intrinsics"
 import "core:mem"
@@ -15,6 +20,9 @@ TABLE_FLAGS :: im.TableFlags_Resizable | im.TableFlags_BordersOuter | im.TableFl
 Context :: struct {
     cpu: ^cpu_pkg.CPU,
 
+    load_rom_path: string,
+    load_rom_error: string,
+
     byte_fmt: string,
     two_byte_fmt: string,
 	reg_mode: int,
@@ -23,7 +31,7 @@ Context :: struct {
     editors: [dynamic]Ram_Editor,
 }
 
-context_init :: proc(ctx: ^Context, cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
+context_init :: proc(ctx: ^Context, cpu: ^cpu_pkg.CPU, allocator: runtime.Allocator) {
     ctx.cpu = cpu
 
     ctx.byte_fmt = "%2x"
@@ -39,13 +47,13 @@ context_destroy :: proc(ctx: ^Context) {
     delete(ctx.editors)
 }
 
-render :: proc(ctx: ^Context, allocator := context.allocator) {
+render :: proc(ctx: ^Context, allocator: runtime.Allocator) {
     render_cpu(ctx, allocator)
     render_ram(ctx, allocator)
     render_screen(ctx.cpu, allocator)
 }
 
-render_screen :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) { 
+render_screen :: proc(cpu: ^cpu_pkg.CPU, allocator: runtime.Allocator) { 
 	im.Begin("Screen")
 	defer im.End()
 
@@ -65,7 +73,7 @@ render_screen :: proc(cpu: ^cpu_pkg.CPU, allocator := context.allocator) {
     }
 }
 
-render_cpu :: proc(ctx: ^Context, allocator := context.allocator) {
+render_cpu :: proc(ctx: ^Context, allocator: runtime.Allocator) {
 	im.Begin("CPU")
 	defer im.End()
 
@@ -103,9 +111,40 @@ render_cpu :: proc(ctx: ^Context, allocator := context.allocator) {
         general_regs(ctx.cpu, ctx.byte_fmt, ctx.two_byte_fmt, ctx.reg_mode, allocator)
         special_regs(ctx.cpu, ctx.two_byte_fmt, allocator)
 	}
+
+    size :: 1024
+    rom_path: [size]u8
+    rom_path_str: string
+    im.InputTextWithHint("rom_location", "path to ROM", cstring(raw_data(&rom_path)), size, flags = {.CallbackCompletion}, user_data = &rom_path_str, callback = proc "c" (data: ^im.InputTextCallbackData) -> c.int {
+        str_prt := (^string)(data.UserData)
+        ptr := transmute([^]u8)data.Buf
+        str_prt^ = string(ptr[:data.BufTextLen])
+        load_rom(ctx, strings.string_from_null_terminated_ptr(raw_data(&rom_path), size), allocator)
+
+        return data.BufTextLen
+    })
+
+    if im.Button("load ROM") {
+        load_rom(ctx, strings.string_from_null_terminated_ptr(raw_data(&rom_path), size), allocator)
+    }
+    if ctx.load_rom_error != "" {
+        im.Text("failed to open ROM file: %s", ctx.load_rom_error)
+        return
+    }
 }
 
-special_regs :: proc(cpu: ^cpu_pkg.CPU, two_byte_fmt: string, allocator := context.allocator) {
+load_rom :: proc(ctx: ^Context, path: string, allocator: runtime.Allocator) {
+    data, read_err := os.read_entire_file(path, allocator)
+    if read_err != nil {
+        ctx.load_rom_error = fmt.aprint(read_err, allocator = allocator)
+        return
+    } 
+
+    ctx.load_rom_error = ""
+    cpu_pkg.load_rom(ctx.cpu, data)
+}
+
+special_regs :: proc(cpu: ^cpu_pkg.CPU, two_byte_fmt: string, allocator: runtime.Allocator) {
     im.SeparatorText("Special Registers")
     if im.BeginTable("special_regs", 1, TABLE_FLAGS) {
         defer im.EndTable()
@@ -117,7 +156,7 @@ special_regs :: proc(cpu: ^cpu_pkg.CPU, two_byte_fmt: string, allocator := conte
     }
 }
 
-general_regs :: proc(cpu: ^cpu_pkg.CPU, byte_fmt, two_byte_fmt: string, reg_mode: int, allocator := context.allocator) {
+general_regs :: proc(cpu: ^cpu_pkg.CPU, byte_fmt, two_byte_fmt: string, reg_mode: int, allocator: runtime.Allocator) {
     im.SeparatorText("General Purpose Registers")
     if reg_mode == 1 {
         if im.BeginTable("common_regs", 2, TABLE_FLAGS) {
@@ -158,7 +197,7 @@ table_item :: proc(label, value: cstring) {
     im.Text(value)
 }
 
-render_ram :: proc(ctx: ^Context, allocator := context.allocator) {
+render_ram :: proc(ctx: ^Context, allocator: runtime.Allocator) {
     im.Begin("RAM")
     defer im.End()
 
@@ -172,7 +211,7 @@ render_ram :: proc(ctx: ^Context, allocator := context.allocator) {
     }
 
     for &viewer in ctx.viewers {
-        ram_viewer_render(&viewer, allocator = allocator)
+        ram_viewer_render(&viewer, allocator)
     }
 
     if im.SmallButton("add editor") {
@@ -185,7 +224,7 @@ render_ram :: proc(ctx: ^Context, allocator := context.allocator) {
     }
 
     for &editor in ctx.editors {
-        ram_editor_render(&editor, allocator = allocator)
+        ram_editor_render(&editor, allocator)
     }
 }
 
@@ -196,7 +235,7 @@ Ram_Viewer :: struct {
     limit: u16,
 }
 
-ram_viewer_render :: proc(r: ^Ram_Viewer, allocator := context.allocator) {
+ram_viewer_render :: proc(r: ^Ram_Viewer, allocator: runtime.Allocator) {
     id := fmt.caprintf("RAM viewer #%d", r.id, allocator = allocator)
     im.Begin(id)
     defer im.End()
@@ -230,7 +269,7 @@ IM_U8_HEX_FMT :: "%02X"
 IM_U16_DEC_FMT :: "%d"
 IM_U16_HEX_FMT :: "%04X"
 
-ram_editor_render :: proc(r: ^Ram_Editor, allocator := context.allocator) {
+ram_editor_render :: proc(r: ^Ram_Editor, allocator: runtime.Allocator) {
     im.Begin(fmt.caprintf("RAM editor #%d", r.id, allocator = allocator))
     defer im.End()
 

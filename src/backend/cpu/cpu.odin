@@ -89,6 +89,10 @@ new_cpu :: proc() -> CPU {
     return cpu
 }
 
+load_rom :: proc(cpu: ^CPU, rom: []u8) {
+    panic("not implemented")
+}
+
 
 tick :: proc(cpu: ^CPU) -> bool {
     cycles := execute(cpu) if !cpu.halted else 1
