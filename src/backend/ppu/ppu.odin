@@ -3,8 +3,16 @@ package ppu
 MEM_START :: 0x8000
 MEM_END :: 0xA000
 
+TILE_SET_START :: 0x8000
+TILE_SET_STOP  :: 0x9800
+TILE_MAP_START :: 0x9800
+TILE_MAP_STOP  :: 0xA000
+
+
+TILE_COUNT :: 384
+
 PPU :: struct {
-    vram: [8192]u8,
+    tiles: [TILE_COUNT]Tile,
 }
 
 new :: proc() -> PPU {
@@ -12,9 +20,23 @@ new :: proc() -> PPU {
 }
 
 read_vram :: proc(ppu: PPU, addr: u16) -> u8 {
-    panic("not implemented")
+    switch {
+    case addr >= TILE_SET_START && addr < TILE_SET_STOP:
+        panic("not implemented")
+    case addr >= TILE_MAP_START && addr < TILE_MAP_STOP:
+        panic("not implemented")
+    case:
+        panic("unreachable")
+    }
 }
 
 write_vram :: proc(ppu: ^PPU, addr: u16, val: u8) {
-    panic("not implemented")
+    switch {
+    case addr >= TILE_SET_START && addr < TILE_SET_STOP:
+        panic("not implemented")
+    case addr >= TILE_MAP_START && addr < TILE_MAP_STOP:
+        panic("not implemented")
+    case:
+        panic("unreachable")
+    }
 }
