@@ -15,7 +15,13 @@ Bus :: struct {
 }
 
 new :: proc() -> Bus {
-	return Bus{}
+	return Bus{
+        ppu = ppu.new(),
+    }
+}
+
+update_ppu :: proc(b: ^Bus, cycles: u8) -> ppu.Result {
+    return ppu.update(&b.ppu, cycles)
 }
 
 read :: proc(b: Bus, addr: u16) -> u8 {

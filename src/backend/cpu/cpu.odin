@@ -5,6 +5,7 @@ import "core:log"
 import "src:helper/math"
 import "src:backend/bus"
 import "src:backend/cart"
+import "src:backend/ppu"
 
 CPU :: struct {
     pc, sp: u16,
@@ -112,8 +113,9 @@ load_rom :: proc(cpu: ^CPU, rom: []u8) {
 
 tick :: proc(cpu: ^CPU) -> bool {
     cycles := execute(cpu) if !cpu.halted else 1
+    ppu_result := bus.update_ppu(&cpu.bus, cycles)
 
-    return false
+    return ppu_result.lcd == .Render_Frame
 }
 
 execute :: proc(cpu: ^CPU) -> u8 {
