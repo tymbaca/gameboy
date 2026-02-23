@@ -6,6 +6,8 @@ import "src:helper/math"
 
 RAM_SIZE :: math.MAX_U16 + 1
 
+RAM_START :: 0xA000
+
 Bus :: struct {
 	cart: cart.Cartridge,
 	ppu:  ppu.PPU,
@@ -17,29 +19,29 @@ new :: proc() -> Bus {
 }
 
 read :: proc(b: Bus, addr: u16) -> u8 {
-    switch {
-    case addr >= cart.MEM_START && addr < cart.MEM_END:
-		return cart.read(b.cart, addr - cart.MEM_START)
+    switch addr {
+    case cart.MEM_START..<cart.MEM_END:
+		return cart.read(b.cart, addr)
 
-    case addr >= ppu.MEM_START && addr < ppu.MEM_END:
-        return ppu.read_vram(b.ppu, addr - ppu.MEM_START)
+    case ppu.MEM_START..<ppu.MEM_END:
+        return ppu.read_vram(b.ppu, addr)
 
     case:
-        return b.ram[addr - ppu.MEM_END]
+        return b.ram[addr - RAM_START]
     }
 
 }
 
 write :: proc(b: ^Bus, addr: u16, val: u8) {
-    switch {
-    case addr >= cart.MEM_START && addr < cart.MEM_END:
-		cart.write(&b.cart, addr - cart.MEM_START, val)
+    switch addr {
+    case cart.MEM_START..<cart.MEM_END:
+		cart.write(&b.cart, addr, val)
 
-    case addr >= ppu.MEM_START && addr < ppu.MEM_END:
-		ppu.write_vram(&b.ppu, addr - ppu.MEM_START, val)
+    case ppu.MEM_START..<ppu.MEM_END:
+		ppu.write_vram(&b.ppu, addr, val)
 
     case:
-        b.ram[addr - ppu.MEM_END] = val
+        b.ram[addr - RAM_START] = val
     }
 }
 

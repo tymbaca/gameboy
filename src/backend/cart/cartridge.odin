@@ -14,9 +14,9 @@ new :: proc(rom: []u8) -> Cartridge {
 }
 
 read :: proc(cart: Cartridge, addr: u16) -> u8 {
-    return cart.rom[addr]
+    return cart.rom[addr - MEM_START]
 }
 
 write :: proc(cart: ^Cartridge, addr: u16, val: u8) {
-    cart.rom[addr] = val
+    cart.rom[addr - MEM_START] = val
 }
