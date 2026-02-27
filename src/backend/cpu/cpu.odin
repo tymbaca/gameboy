@@ -112,10 +112,19 @@ load_rom :: proc(cpu: ^CPU, rom: []u8) {
 
 
 tick :: proc(cpu: ^CPU) -> bool {
+    need_draw: bool = false
+
     cycles := execute(cpu) if !cpu.halted else 1
     ppu_result := bus.update_ppu(&cpu.bus, cycles)
 
-    return ppu_result.lcd == .Render_Frame
+    if ppu_result.lcd == .Render_Frame {
+        set_interrupt(cpu, .VBLANK)
+        need_draw = true
+    }
+
+    if irq := check_interrupt_required(cpu); irq != 0 {
+
+    }
 }
 
 execute :: proc(cpu: ^CPU) -> u8 {
