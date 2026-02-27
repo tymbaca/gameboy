@@ -15,40 +15,44 @@ Bus :: struct {
 }
 
 new :: proc() -> Bus {
-	return Bus{
-        ppu = ppu.new(),
-    }
+	return Bus{ppu = ppu.new()}
 }
 
 update_ppu :: proc(b: ^Bus, cycles: u8) -> ppu.Result {
-    return ppu.update(&b.ppu, cycles)
+	return ppu.update(&b.ppu, cycles)
 }
 
 read :: proc(b: Bus, addr: u16) -> u8 {
-    switch addr {
-    case cart.MEM_START..<cart.MEM_END:
+	switch addr {
+	case cart.MEM_START ..< cart.MEM_END:
 		return cart.read(b.cart, addr)
 
-    case ppu.MEM_START..<ppu.MEM_END:
-        return ppu.read_vram(b.ppu, addr)
+	case ppu.MEM_START ..< ppu.MEM_END:
+		return ppu.read_vram(b.ppu, addr)
 
-    case:
-        return b.ram[addr - RAM_START]
-    }
+	case ppu.LCD_REG_START ..< ppu.LCD_REG_STOP:
+        return ppu.read_lcd_reg(b.ppu, addr)
+
+	case:
+		return b.ram[addr - RAM_START]
+	}
 
 }
 
 write :: proc(b: ^Bus, addr: u16, val: u8) {
-    switch addr {
-    case cart.MEM_START..<cart.MEM_END:
+	switch addr {
+	case cart.MEM_START ..< cart.MEM_END:
 		cart.write(&b.cart, addr, val)
 
-    case ppu.MEM_START..<ppu.MEM_END:
+	case ppu.MEM_START ..< ppu.MEM_END:
 		ppu.write_vram(&b.ppu, addr, val)
 
-    case:
-        b.ram[addr - RAM_START] = val
-    }
+	case ppu.LCD_REG_START ..< ppu.LCD_REG_STOP:
+        ppu.write_lcd_reg(b.ppu, addr, val)
+
+	case:
+		b.ram[addr - RAM_START] = val
+	}
 }
 
 load_cart :: proc(b: ^Bus, cart: cart.Cartridge) {

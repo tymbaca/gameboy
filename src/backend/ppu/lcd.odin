@@ -1,5 +1,13 @@
 package ppu
 
+HBLANK_LEN :: 204
+VBLANK_LEN :: 456
+OAM_READ_LEN :: 80
+VRAM_READ_LEN :: 172
+
+VBLANK_LINE_START :: 143
+VBLANK_LINE_END :: VBLANK_LINE_START + 10
+
 LCD_Mode :: enum {
 	HBLANK    = 0,
 	VBLANK    = 1,
@@ -25,14 +33,6 @@ LCD_Result :: enum {
     No_Action,
     Render_Frame,
 }
-
-HBLANK_LEN :: 204
-VBLANK_LEN :: 456
-OAM_READ_LEN :: 80
-VRAM_READ_LEN :: 172
-
-VBLANK_LINE_START :: 143
-VBLANK_LINE_END :: VBLANK_LINE_START + 10
 
 step :: proc(lcd: ^LCD, cycles: u8) -> LCD_Result {
     result: LCD_Result = .No_Action

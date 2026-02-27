@@ -8,29 +8,27 @@ TILE_SET_STOP :: 0x9800
 TILE_MAP_START :: 0x9800
 TILE_MAP_STOP :: 0xA000
 
-
 TILE_SIZE :: 16
 TILE_COUNT :: 384
 
 PPU :: struct {
-	lcd:     LCD,
 	tileset: [TILE_COUNT]Tile,
 	maps:    [TILE_MAP_STOP - TILE_MAP_START]u8,
+	lcd:     LCD,
+    lcd_reg: [LCD_REG_STOP - LCD_REG_START]u8,
 }
 
 new :: proc() -> PPU {
-	return {
-        lcd = new_lcd(),
-    }
+	return {lcd = new_lcd()}
 }
 
 Result :: struct {
-    lcd: LCD_Result,
+	lcd: LCD_Result,
 }
 
 update :: proc(ppu: ^PPU, cycles: u8) -> Result {
-    lcd_res := step(&ppu.lcd, cycles)
-    return {lcd = lcd_res}
+	lcd_res := step(&ppu.lcd, cycles)
+	return {lcd = lcd_res}
 }
 
 read_vram :: proc(ppu: PPU, addr: u16) -> u8 {
