@@ -58,7 +58,7 @@ nop_00 :: proc(cpu: ^CPU) -> u8 {
     return 1
 }
 
-inc :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+inc :: proc "contextless" ($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
 
@@ -72,7 +72,7 @@ inc :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-inc_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+inc_u16 :: proc "contextless" ($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg_u16(cpu, reg)
         set_reg_u16(cpu, reg, val + 1)
@@ -94,7 +94,7 @@ inc_34 :: proc(cpu: ^CPU) -> u8 {
     return 3
 }
 
-dec :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+dec :: proc "contextless" ($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
 
@@ -108,7 +108,7 @@ dec :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-dec_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+dec_u16 :: proc "contextless" ($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg_u16(cpu, reg)
         set_reg_u16(cpu, reg, val - 1)
@@ -130,7 +130,7 @@ dec_35 :: proc(cpu: ^CPU) -> u8 {
     return 3
 }
 
-add :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+add :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         add_helper(cpu, left_reg, right, false)
@@ -140,7 +140,7 @@ add :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // ADD A,(HL)
-add_86 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+add_86 :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         add_helper(cpu, left_reg, right, false)
@@ -150,7 +150,7 @@ add_86 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // ADD A,u8
-add_C6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+add_C6 :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         add_helper(cpu, left_reg, right, false)
@@ -172,7 +172,7 @@ add_E8 :: proc(cpu: ^CPU) -> u8 {
     return 4
 }
 
-add_u16 :: proc($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+add_u16 :: proc "contextless" ($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         left := get_reg_u16(cpu, left_reg)
         right := get_reg_u16(cpu, right_reg)
@@ -188,7 +188,7 @@ add_u16 :: proc($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-adc :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+adc :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         add_helper(cpu, left_reg, right, true)
@@ -198,7 +198,7 @@ adc :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // ADC A,(HL)
-adc_8E :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+adc_8E :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         add_helper(cpu, left_reg, right, true)
@@ -208,7 +208,7 @@ adc_8E :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // ADC A,u8
-adc_CE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+adc_CE :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         add_helper(cpu, left_reg, right, true)
@@ -243,7 +243,7 @@ add_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8, use_carry: bool) {
     set_reg(cpu, left_reg, left_val)
 }
 
-sub :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+sub :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         sub_helper(cpu, left_reg, right, false)
@@ -253,7 +253,7 @@ sub :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // SUB A,(HL)
-sub_96 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+sub_96 :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         sub_helper(cpu, left_reg, right, false)
@@ -263,7 +263,7 @@ sub_96 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // SUB A,u8
-sub_D6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+sub_D6 :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         sub_helper(cpu, left_reg, right, false)
@@ -272,7 +272,7 @@ sub_D6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-sbc :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+sbc :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         sub_helper(cpu, left_reg, right, true)
@@ -282,7 +282,7 @@ sbc :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // SBC A,(HL)
-sbc_9E :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+sbc_9E :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         sub_helper(cpu, left_reg, right, true)
@@ -292,7 +292,7 @@ sbc_9E :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // SUB A,u8
-sbc_DE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+sbc_DE :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         sub_helper(cpu, left_reg, right, true)
@@ -327,7 +327,7 @@ sub_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8, use_carry: bool) {
     set_reg(cpu, left_reg, left_val)
 }
 
-and :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+and :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         and_helper(cpu, left_reg, right)
@@ -336,7 +336,7 @@ and :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-and_A6 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+and_A6 :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         and_helper(cpu, left_reg, right)
@@ -345,7 +345,7 @@ and_A6 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-and_E6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+and_E6 :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         and_helper(cpu, left_reg, right)
@@ -365,7 +365,7 @@ and_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
     cpu.f.c = false
 }
 
-or :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+or :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         or_helper(cpu, left_reg, right)
@@ -374,7 +374,7 @@ or :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-or_B6 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+or_B6 :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         or_helper(cpu, left_reg, right)
@@ -383,7 +383,7 @@ or_B6 :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-or_F6 :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+or_F6 :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         or_helper(cpu, left_reg, right)
@@ -403,7 +403,7 @@ or_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
     cpu.f.c = false
 }
 
-xor :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+xor :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         xor_helper(cpu, left_reg, right)
@@ -412,7 +412,7 @@ xor :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-xor_AE :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+xor_AE :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         xor_helper(cpu, left_reg, right)
@@ -421,7 +421,7 @@ xor_AE :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-xor_EE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+xor_EE :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         xor_helper(cpu, left_reg, right)
@@ -441,7 +441,7 @@ xor_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
     cpu.f.c = false
 }
 
-cp :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+cp :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := get_reg(cpu, right_reg)
         cp_helper(cpu, left_reg, right)
@@ -450,7 +450,7 @@ cp :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-cp_BE :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+cp_BE :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := read_mem(cpu, get_reg_u16(cpu, right_reg))
         cp_helper(cpu, left_reg, right)
@@ -459,7 +459,7 @@ cp_BE :: proc($left_reg: Reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-cp_FE :: proc($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+cp_FE :: proc "contextless" ($left_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         right := fetch(cpu)
         cp_helper(cpu, left_reg, right)
@@ -480,7 +480,7 @@ cp_helper :: proc(cpu: ^CPU, left_reg: Reg, right_val: u8) {
     cpu.f.c = c
 }
 
-ld :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+ld :: proc "contextless" ($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, right_reg)
         set_reg(cpu, left_reg, val)
@@ -489,7 +489,7 @@ ld :: proc($left_reg, $right_reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-ld_u16 :: proc($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+ld_u16 :: proc "contextless" ($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg_u16(cpu, right_reg)
         set_reg_u16(cpu, left_reg, val)
@@ -499,7 +499,7 @@ ld_u16 :: proc($left_reg, $right_reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // load memory into left
-ld_ml :: proc($left_reg: Reg_u16, $right_reg: Reg, $step: i8) -> proc(cpu: ^CPU) -> u8 {
+ld_ml :: proc "contextless" ($left_reg: Reg_u16, $right_reg: Reg, $step: i8) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, right_reg)
         write_mem(cpu, get_reg_u16(cpu, left_reg), val)
@@ -511,7 +511,7 @@ ld_ml :: proc($left_reg: Reg_u16, $right_reg: Reg, $step: i8) -> proc(cpu: ^CPU)
 }
 
 // load memory from right
-ld_mr :: proc($left_reg: Reg, $right_reg: Reg_u16, $step: i8) -> proc(cpu: ^CPU) -> u8 {
+ld_mr :: proc "contextless" ($left_reg: Reg, $right_reg: Reg_u16, $step: i8) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := read_mem(cpu, get_reg_u16(cpu, right_reg))
         set_reg(cpu, left_reg, val)
@@ -523,7 +523,7 @@ ld_mr :: proc($left_reg: Reg, $right_reg: Reg_u16, $step: i8) -> proc(cpu: ^CPU)
 }
 
 // load fetched value into reg
-ld_fv_u8 :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+ld_fv_u8 :: proc "contextless" ($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := fetch(cpu)
         set_reg(cpu, reg, val)
@@ -533,7 +533,7 @@ ld_fv_u8 :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // load fetched value into u16 reg
-ld_fv_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+ld_fv_u16 :: proc "contextless" ($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := fetch_u16(cpu)
         set_reg_u16(cpu, reg, val)
@@ -543,7 +543,7 @@ ld_fv_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // load fetched value into (reg) address
-ld_fmem :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+ld_fmem :: proc "contextless" ($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := fetch(cpu)
         addr := get_reg_u16(cpu, reg)
@@ -554,7 +554,7 @@ ld_fmem :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // load into fetched address
-ld_fl :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+ld_fl :: proc "contextless" ($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
         addr := fetch_u16(cpu)
@@ -565,7 +565,7 @@ ld_fl :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // load Reg_u16 into fetched address
-ld_fl_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
+ld_fl_u16 :: proc "contextless" ($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg_u16(cpu, reg)
         high, low := math.split_u16(val)
@@ -579,7 +579,7 @@ ld_fl_u16 :: proc($reg: Reg_u16) -> proc(cpu: ^CPU) -> u8 {
 }
 
 // load from fetched address
-ld_fr :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+ld_fr :: proc "contextless" ($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         addr := fetch_u16(cpu)
         val := read_mem(cpu, addr)
@@ -646,7 +646,7 @@ ld_ffc_r :: proc(cpu: ^CPU) -> u8 {
     return 2
 }
 
-pop_reg :: proc($reg: Reg_u16) -> proc(^CPU) -> u8 {
+pop_reg :: proc "contextless" ($reg: Reg_u16) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := pop(cpu)
         set_reg_u16(cpu, reg, val)
@@ -655,7 +655,7 @@ pop_reg :: proc($reg: Reg_u16) -> proc(^CPU) -> u8 {
     }
 }
 
-push_reg :: proc($reg: Reg_u16) -> proc(^CPU) -> u8 {
+push_reg :: proc "contextless" ($reg: Reg_u16) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg_u16(cpu, reg)
         push(cpu, val)
@@ -664,7 +664,7 @@ push_reg :: proc($reg: Reg_u16) -> proc(^CPU) -> u8 {
     }
 }
 
-jp_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+jp_if :: proc "contextless" ($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         addr := fetch_u16(cpu)
 
@@ -689,7 +689,7 @@ jp_E9 :: proc(cpu: ^CPU) -> u8 {
     return 1
 }
 
-jr_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+jr_if :: proc "contextless" ($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         offset := fetch_i8(cpu)
 
@@ -719,7 +719,7 @@ call_cd :: proc(cpu: ^CPU) -> u8 {
     return 6
 }
 
-call_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+call_if :: proc "contextless" ($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         addr := fetch_u16(cpu)
 
@@ -738,7 +738,7 @@ ret_c9 :: proc(cpu: ^CPU) -> u8 {
     return 4
 }
 
-ret_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
+ret_if :: proc "contextless" ($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         if get_flag(cpu, flag) == is {
             cpu.pc = pop(cpu)
@@ -749,7 +749,7 @@ ret_if :: proc($flag: Flag_Kind, $is: bool) -> proc(^CPU) -> u8 {
     }
 }
 
-rst :: proc($step: int) -> proc(^CPU) -> u8 {
+rst :: proc "contextless" ($step: int) -> proc(^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         addr := 0x0000
         addr += 0x8 * step
@@ -813,7 +813,7 @@ rra_1F :: proc(cpu: ^CPU) -> u8 {
     return 1
 }
 
-rl :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
+rl :: proc "contextless" ($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
         val = rl_helper(cpu, val, carry)
@@ -822,7 +822,7 @@ rl :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-rl_hl :: proc($carry: bool) -> proc(cpu: ^CPU) -> u8 {
+rl_hl :: proc "contextless" ($carry: bool) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := read_mem(cpu, get_reg_u16(cpu, .HL))
         val = rl_helper(cpu, val, carry)
@@ -846,7 +846,7 @@ rl_helper :: proc(cpu: ^CPU, val: u8, carry: bool) -> u8 {
     return res
 }
 
-rr :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
+rr :: proc "contextless" ($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
         val = rr_helper(cpu, val, carry)
@@ -855,7 +855,7 @@ rr :: proc($reg: Reg, $carry: bool) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-rr_hl :: proc($carry: bool) -> proc(cpu: ^CPU) -> u8 {
+rr_hl :: proc "contextless" ($carry: bool) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := read_mem(cpu, get_reg_u16(cpu, .HL))
         val = rr_helper(cpu, val, carry)
@@ -879,7 +879,7 @@ rr_helper :: proc(cpu: ^CPU, val: u8, carry: bool) -> u8 {
     return res
 }
 
-sl :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+sl :: proc "contextless" ($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := sl_helper(cpu, get_reg(cpu, reg))
         set_reg(cpu, reg, val)
@@ -906,7 +906,7 @@ sl_helper :: proc(cpu: ^CPU, val: u8) -> u8 {
     return val
 }
 
-sr :: proc($reg: Reg, $arith: bool) -> proc(cpu: ^CPU) -> u8 {
+sr :: proc "contextless" ($reg: Reg, $arith: bool) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := sr_helper(cpu, get_reg(cpu, reg), arith)
         set_reg(cpu, reg, val)
@@ -914,7 +914,7 @@ sr :: proc($reg: Reg, $arith: bool) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-sr_hl :: proc($arith: bool) -> proc(cpu: ^CPU) -> u8 {
+sr_hl :: proc "contextless" ($arith: bool) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := read_mem(cpu, get_reg_u16(cpu, .HL))
         val = sr_helper(cpu, val, arith)
@@ -940,7 +940,7 @@ sr_helper :: proc(cpu: ^CPU, val: u8, arith: bool) -> u8 {
     return val
 }
 
-swap :: proc($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
+swap :: proc "contextless" ($reg: Reg) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := swap_helper(cpu, get_reg(cpu, reg))
         set_reg(cpu, reg, val)
@@ -969,7 +969,7 @@ swap_helper :: proc(cpu: ^CPU, val: u8) -> u8 {
     return res
 }
 
-bit :: proc($reg: Reg, $bit: uint) -> proc(cpu: ^CPU) -> u8 {
+bit :: proc "contextless" ($reg: Reg, $bit: uint) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
         bit_helper(cpu, val, bit)
@@ -978,7 +978,7 @@ bit :: proc($reg: Reg, $bit: uint) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-bit_hl :: proc($bit: uint) -> proc(cpu: ^CPU) -> u8 {
+bit_hl :: proc "contextless" ($bit: uint) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := read_mem(cpu, get_reg_u16(cpu, .HL))
         bit_helper(cpu, val, bit)
@@ -996,7 +996,7 @@ bit_helper :: proc(cpu: ^CPU, val: u8, bit: uint) {
     return
 }
 
-set_bit :: proc($reg: Reg, $bit: uint, $set: uint) -> proc(cpu: ^CPU) -> u8 {
+set_bit :: proc "contextless" ($reg: Reg, $bit: uint, $set: uint) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := get_reg(cpu, reg)
         val = math.set_bit(val, bit, set != 0)
@@ -1006,7 +1006,7 @@ set_bit :: proc($reg: Reg, $bit: uint, $set: uint) -> proc(cpu: ^CPU) -> u8 {
     }
 }
 
-set_bit_hl :: proc($bit: uint, $set: uint) -> proc(cpu: ^CPU) -> u8 {
+set_bit_hl :: proc "contextless" ($bit: uint, $set: uint) -> proc(cpu: ^CPU) -> u8 {
     return proc(cpu: ^CPU) -> u8 {
         val := read_mem(cpu, get_reg_u16(cpu, .HL))
         val = math.set_bit(val, bit, set != 0)

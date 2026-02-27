@@ -1,6 +1,5 @@
 package ppu
 
-import "core:reflect"
 import "core:testing"
 
 @(test)
@@ -26,7 +25,7 @@ tile_test :: proc(t: ^testing.T) {
             {.White, .Light, .Dark, .Black, .White, .Light, .Dark, .Black},
             {.White, .Light, .Dark, .Black, .White, .Light, .Dark, .Black},
             {.White, .Light, .Dark, .Black, .White, .Light, .Dark, .Black},
-        }
+        },
     })
 
     buf: [16]u8
@@ -84,7 +83,7 @@ tile_byte_test :: proc(t: ^testing.T) {
             {.White, .Light, .Dark, .Black, .White, .Light, .Dark, .Black},
             {.White, .Light, .Dark, .Black, .White, .Light, .Dark, .Black},
             {.White, .Light, .Dark, .Black, .White, .Light, .Dark, .Black},
-        }
+        },
     })
 
     testing.expect(t, read_tile_byte(tile, 0) == 0xA5)

@@ -118,13 +118,15 @@ tick :: proc(cpu: ^CPU) -> bool {
     ppu_result := bus.update_ppu(&cpu.bus, cycles)
 
     if ppu_result.lcd == .Render_Frame {
-        set_interrupt(cpu, .VBLANK)
+        set_interrupt(cpu, .VBLANK, true)
         need_draw = true
     }
 
-    if irq := check_interrupt_required(cpu); irq != 0 {
-
+    if intr, ok := check_interrupt_required(cpu); ok {
+        trigger_interrupt(cpu, intr)
     }
+
+    return need_draw
 }
 
 execute :: proc(cpu: ^CPU) -> u8 {
